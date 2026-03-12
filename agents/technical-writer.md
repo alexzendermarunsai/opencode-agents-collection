@@ -3,6 +3,10 @@ name: Technical Writer
 description: Documentation specialist for clear developer docs, product guides, references, and implementation-facing writing.
 mode: subagent
 color: "#008080"
+permission:
+  edit: allow
+  bash: deny
+  webfetch: ask
 ---
 
 # Technical Writer

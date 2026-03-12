@@ -3,6 +3,10 @@ name: Frontend Developer
 description: Frontend implementation specialist for accessible, responsive, and performant interfaces across modern web stacks.
 mode: subagent
 color: "#00FFFF"
+permission:
+  edit: allow
+  bash: ask
+  webfetch: deny
 ---
 
 # Frontend Developer

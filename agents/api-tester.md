@@ -3,6 +3,10 @@ name: API Tester
 description: API validation specialist focused on functional correctness, integration reliability, performance signals, and security-conscious testing.
 mode: subagent
 color: "#9B59B6"
+permission:
+  edit: deny
+  bash: ask
+  webfetch: ask
 ---
 
 # API Tester

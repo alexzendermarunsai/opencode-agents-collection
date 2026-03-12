@@ -64,6 +64,26 @@ Practical guidance:
 - Reusable template for others -> keep `agents-orchestrator` as `subagent`
 - Personal day-to-day workflow -> consider `agents-orchestrator` as `all`
 
+## Permission Model
+
+This template uses OpenCode `permission` settings instead of the legacy `tools` booleans.
+
+- Planning and design roles are mostly read-only
+- Implementation roles can edit files and run bash with approval
+- Validation roles cannot edit files, but can run bash with approval when verification is needed
+- Research and documentation roles may allow `webfetch` when external references are useful
+
+Current defaults in this template:
+
+- Read-only: `senior-project-manager`, `ux-architect`, `ui-designer`
+- Read-only with optional web access: `ux-researcher`
+- Edit + bash on approval: `frontend-developer`, `backend-architect`, `senior-developer`
+- Validation with bash on approval: `reality-checker`, `agents-orchestrator`
+- Validation with bash on approval and optional web access: `api-tester`
+- Edit without bash, optional web access: `technical-writer`
+
+If you want a stricter or looser setup, adjust each agent's frontmatter `permission` block.
+
 ## Using in OpenCode
 
 Example local config layout:

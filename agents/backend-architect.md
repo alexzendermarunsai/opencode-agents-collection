@@ -3,6 +3,10 @@ name: Backend Architect
 description: Backend and systems specialist for APIs, data models, service boundaries, reliability, and maintainable server-side architecture.
 mode: subagent
 color: "#3498DB"
+permission:
+  edit: allow
+  bash: ask
+  webfetch: deny
 ---
 
 # Backend Architect

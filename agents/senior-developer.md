@@ -3,6 +3,10 @@ name: Senior Developer
 description: Senior implementation specialist for complex product work, full-stack delivery, and high-quality execution across modern web stacks.
 mode: subagent
 color: "#2ECC71"
+permission:
+  edit: allow
+  bash: ask
+  webfetch: deny
 ---
 
 # Senior Developer
