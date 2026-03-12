@@ -179,4 +179,5 @@ Use a specialist directly for fast validation:
 ## Notes
 
 - The folder name is just a template label; the agent prompts are written to be reusable outside this directory.
+- In this setup, orchestrator delegation and `permission.task` should use the declared markdown `name:` values, not the filename stems.
 - If you use this as a live OpenCode agents directory, confirm your setup supports loading agents from the `agents/` subdirectory.
