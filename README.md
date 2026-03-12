@@ -39,32 +39,32 @@ For a balanced product feature request, a typical flow is:
 
 ## OpenCode Agent Type
 
-These files define custom OpenCode subagents, not primary agents.
+These files define custom OpenCode specialist agents. Most are subagents, and `agents-orchestrator` defaults to `mode: all` so it can work as both a selectable top-level agent and a callable coordinator.
 
-- Every agent in this template uses `mode: subagent`
-- They are intended to be called from a primary agent or invoked directly with `@agent-id`
-- `agents-orchestrator` is also a subagent; it coordinates other specialists but is not itself a primary agent
+- Most agents in this template use `mode: subagent`
+- `agents-orchestrator` uses `mode: all`
+- You can invoke specialists directly with `@agent-id`
 - Your normal OpenCode primary agent remains the top-level session owner
 
 In practice:
 
-- Use your normal primary agent for the main session
-- Call `@agents-orchestrator` when you want coordinated multi-agent routing
+- Use your normal primary agent for the main session, or select `agents-orchestrator` directly as the top-level agent
+- Call `@agents-orchestrator` when you want coordinated multi-agent routing from another agent
 - Call a specialist like `@frontend-developer` or `@ux-researcher` when you already know the right role
 
 ## Choosing Agent Mode
 
-This template is built around custom OpenCode subagents.
+This template is built around specialist agents, with one orchestrator that can act as both a primary-style entrypoint and a subagent.
 
 - Most files here use `mode: subagent`
-- `agents-orchestrator` can stay a subagent in a reusable template setup
-- If you want `agents-orchestrator` to work both as a selectable top-level agent and a callable coordinator, change it to `mode: all`
+- `agents-orchestrator` defaults to `mode: all`
+- Keep `mode: all` when you want it usable as both a selectable top-level agent and a callable coordinator
 - Use `mode: primary` only if you want orchestration to be the default top-level experience and do not need it to behave as a helper specialist
 
 Practical guidance:
 
-- Reusable template for others -> keep `agents-orchestrator` as `subagent`
-- Personal day-to-day workflow -> consider `agents-orchestrator` as `all`
+- Reusable template for others -> the current default `mode: all` is a good fit if you want flexibility
+- Personal day-to-day workflow -> keep `agents-orchestrator` as `all`
 
 ## Permission Model
 
@@ -120,7 +120,7 @@ Use the orchestrator for a full feature workflow:
 @agents-orchestrator Add a team settings page where admins can invite members, change roles, and remove access. Plan the work, use the right specialists, validate the API behavior, and finish with any docs updates needed.
 ```
 
-If you change `agents-orchestrator` to `mode: all`, you can also select it as your top-level agent and use the same kind of prompt without the `@agents-orchestrator` mention:
+Because `agents-orchestrator` defaults to `mode: all`, you can also select it as your top-level agent and use the same kind of prompt without the `@agents-orchestrator` mention:
 
 ```text
 Add a team settings page where admins can invite members, change roles, and remove access. Plan the work, use the right specialists, validate the API behavior, and finish with any docs updates needed.
