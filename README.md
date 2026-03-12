@@ -10,6 +10,7 @@ This repository contains reusable OpenCode specialist-agent templates organized 
 ## Reference Agents
 
 - `reference-agents/` - standalone source/reference agent files kept outside the curated team packs
+- `reference-agents/` files come from varied external sources; if you copy one into a curated pack or live setup, review and normalize it first for naming, permissions, prompt quality, and workflow consistency
 
 ## Which One To Use
 
