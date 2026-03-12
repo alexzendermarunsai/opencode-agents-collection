@@ -5,7 +5,7 @@ A balanced OpenCode agent template for planning, discovery, design, implementati
 ## Structure
 
 - `agents/` contains the agent markdown files
-- `README.md` explains the template, roles, and suggested workflow
+- `README.md` explains the template, roles, workflow, and usage
 
 ## Agent Roles
 
@@ -35,10 +35,34 @@ For a balanced product feature request, a typical flow is:
 8. `reality-checker`
 9. `technical-writer` when docs need to change
 
-## Notes
+## OpenCode Agent Type
 
-- The folder name is just a template label; the agent prompts are written to be reusable outside this directory.
-- If you use this as a live OpenCode agents directory, confirm your setup supports loading agents from the `agents/` subdirectory.
+These files define custom OpenCode subagents, not primary agents.
+
+- Every agent in this template uses `mode: subagent`
+- They are intended to be called from a primary agent or invoked directly with `@agent-id`
+- `agents-orchestrator` is also a subagent; it coordinates other specialists but is not itself a primary agent
+- Your normal OpenCode primary agent remains the top-level session owner
+
+In practice:
+
+- Use your normal primary agent for the main session
+- Call `@agents-orchestrator` when you want coordinated multi-agent routing
+- Call a specialist like `@frontend-developer` or `@ux-researcher` when you already know the right role
+
+## Choosing Agent Mode
+
+This template is built around custom OpenCode subagents.
+
+- Most files here use `mode: subagent`
+- `agents-orchestrator` can stay a subagent in a reusable template setup
+- If you want `agents-orchestrator` to work both as a selectable top-level agent and a callable coordinator, change it to `mode: all`
+- Use `mode: primary` only if you want orchestration to be the default top-level experience and do not need it to behave as a helper specialist
+
+Practical guidance:
+
+- Reusable template for others -> keep `agents-orchestrator` as `subagent`
+- Personal day-to-day workflow -> consider `agents-orchestrator` as `all`
 
 ## Using in OpenCode
 
@@ -60,9 +84,9 @@ Example local config layout:
     technical-writer.md
 ```
 
-Typical ways to use this set in OpenCode:
+Typical ways to use these subagents in OpenCode:
 
-- Put the agent files in your project-level `.opencode/agents/` directory or your global OpenCode agents directory.
+- Put the agent files in your project-level `.opencode/agents/` directory or your global OpenCode agents directory
 - Start with `@agents-orchestrator` when you want one agent to coordinate the rest of the team.
 - Call a specialist directly when you already know the right role.
 
@@ -72,6 +96,12 @@ Use the orchestrator for a full feature workflow:
 
 ```text
 @agents-orchestrator Add a team settings page where admins can invite members, change roles, and remove access. Plan the work, use the right specialists, validate the API behavior, and finish with any docs updates needed.
+```
+
+If you change `agents-orchestrator` to `mode: all`, you can also select it as your top-level agent and use the same kind of prompt without the `@agents-orchestrator` mention:
+
+```text
+Add a team settings page where admins can invite members, change roles, and remove access. Plan the work, use the right specialists, validate the API behavior, and finish with any docs updates needed.
 ```
 
 Use a specialist directly for planning:
@@ -91,3 +121,8 @@ Use a specialist directly for implementation:
 ```text
 @frontend-developer Implement the account security panel using the existing design system, including loading, empty, success, and error states.
 ```
+
+## Notes
+
+- The folder name is just a template label; the agent prompts are written to be reusable outside this directory.
+- If you use this as a live OpenCode agents directory, confirm your setup supports loading agents from the `agents/` subdirectory.
