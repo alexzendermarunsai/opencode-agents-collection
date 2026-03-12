@@ -2,6 +2,8 @@
 
 A balanced OpenCode agent template for planning, discovery, design, implementation, validation, and documentation.
 
+Use `a-team` when you want a lean, product-delivery workflow without the extra deployment, performance, security, accessibility, AI, and prototype specialists included in `a-team-plus`.
+
 ## Structure
 
 - `agents/` contains the agent markdown files
