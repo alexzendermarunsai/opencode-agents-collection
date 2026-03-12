@@ -1,0 +1,15 @@
+# OS and editor noise
+.DS_Store
+Thumbs.db
+
+# Vim and other editor swap files
+*.swp
+*.swo
+*~
+
+# JetBrains and VS Code project settings
+.idea/
+.vscode/
+
+# Temporary logs
+*.log
