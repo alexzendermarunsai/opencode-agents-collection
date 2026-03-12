@@ -4,7 +4,7 @@ A comprehensive OpenCode agent template for planning, discovery, design, impleme
 
 ## How It Differs From A-Team
 
-`a-team` is the lean balanced core.
+`a-team` is the lean, balanced core.
 
 `a-team-plus` adds broader shipping and specialty coverage:
 
@@ -15,7 +15,7 @@ A comprehensive OpenCode agent template for planning, discovery, design, impleme
 - AI feature implementation via `ai-engineer`
 - fast MVP and prototype work via `rapid-prototyper`
 
-Use `a-team-plus` when the work goes beyond product delivery and includes release operations, nonfunctional review, AI integration, or rapid concept validation.
+Use `a-team-plus` when the work goes beyond product delivery and includes release operations, non-functional review, AI integration, or rapid concept validation.
 
 ## Structure
 
