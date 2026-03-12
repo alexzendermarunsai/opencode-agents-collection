@@ -68,16 +68,24 @@ Use these exact available agent IDs when they fit the task:
 ### UX and Design
 - `ux-architect` for information architecture, user flows, layout systems, responsive structure, accessibility foundations, and developer-ready UX guidance
 - `ui-designer` for visual systems, typography, color direction, component states, styling guidance, and implementation-ready UI refinement
-- `technical-writer` for user-facing or internal documentation
 
 ### Engineering
 - `frontend-developer` for UI implementation
 - `backend-architect` for backend architecture, API design, data modeling, integration boundaries, auth, reliability, and backend-heavy implementation
 - `senior-developer` for complex cross-layer implementation, full-stack delivery, cleanup of weak implementations, or features that benefit from one strong end-to-end owner
+- `rapid-prototyper` for fast MVPs, proof-of-concept work, and hypothesis validation builds
+- `ai-engineer` for AI features, model integration, inference workflows, and AI-oriented data pipelines
+
+### Delivery, Quality, and Operations
+- `devops-automator` for CI/CD, deployment automation, environment management, and infrastructure changes
+- `performance-benchmarker` for benchmarking, bottleneck analysis, scalability review, and performance validation
+- `security-engineer` for threat modeling, security review, hardening guidance, and release-risk assessment
+- `accessibility-auditor` for accessibility review, WCAG-oriented checks, and inclusive release validation
 
 ### Validation and Delivery
 - `api-tester` for API validation
 - `reality-checker` for skeptical final validation
+- `technical-writer` for user-facing or internal documentation
 
 ## Routing Decision Rules
 
@@ -89,6 +97,12 @@ Use these rules when multiple agents seem plausible:
 - Use `frontend-developer` when the work is primarily coded UI implementation.
 - Use `backend-architect` when the work is primarily API, data, backend behavior, auth, reliability, or integration-boundary design.
 - Use `senior-developer` when one agent should own a tightly coupled feature across frontend and backend, or when the work requires strong implementation judgment across layers.
+- Use `rapid-prototyper` when the goal is to validate an idea quickly with minimal scope rather than build a production-ready feature.
+- Use `ai-engineer` when the task involves model integration, inference workflows, retrieval, evaluation, or AI feature design.
+- Use `devops-automator` when the work involves deployment, CI/CD, infrastructure, environment configuration, or release automation.
+- Use `performance-benchmarker` when the question is about performance, load behavior, latency, bottlenecks, or scalability.
+- Use `security-engineer` when the work requires security review, threat modeling, hardening, or release-risk assessment.
+- Use `accessibility-auditor` when the work requires accessibility review, keyboard/screen-reader risk analysis, or inclusive release checks.
 
 A simple shorthand:
 - user evidence -> `ux-researcher`
@@ -97,6 +111,12 @@ A simple shorthand:
 - frontend code -> `frontend-developer`
 - backend/API/data -> `backend-architect`
 - cross-layer implementation owner -> `senior-developer`
+- fast MVP -> `rapid-prototyper`
+- AI workflow -> `ai-engineer`
+- deploy/infra -> `devops-automator`
+- performance -> `performance-benchmarker`
+- security -> `security-engineer`
+- accessibility -> `accessibility-auditor`
 
 ## Delegation Guidance
 
@@ -113,12 +133,17 @@ Example delegation pattern:
 ```text
 Use `senior-project-manager` to turn the request into an execution plan.
 Use `ux-researcher` only if the task has meaningful uncertainty about users, usability, or evidence.
+Use `rapid-prototyper` when the goal is to validate an idea quickly before full implementation.
 Use `ux-architect` to define structure, flows, and implementation foundations.
 Use `ui-designer` to refine visual system and component styling when needed.
 Use `frontend-developer` for UI-heavy implementation.
 Use `backend-architect` for API, data, and backend-heavy work.
 Use `senior-developer` when one agent should own a tightly coupled full-stack feature.
-Use `api-tester` for API validation and `reality-checker` for final readiness assessment.
+Use `ai-engineer` when the feature depends on model-backed functionality.
+Use `api-tester` for API validation.
+Use `performance-benchmarker`, `security-engineer`, or `accessibility-auditor` when those release risks matter.
+Use `devops-automator` when deployment or environment automation is part of the work.
+Use `reality-checker` for final readiness assessment.
 Use `technical-writer` when the work changes docs or needs implementation-facing documentation.
 ```
 
