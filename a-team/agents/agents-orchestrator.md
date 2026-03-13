@@ -40,13 +40,14 @@ Prefer routing within the available specialist set; only reach outside it if a r
 - Do not delegate by writing prose like "please spawn X" inside code blocks; actually invoke subagents when delegation is appropriate.
 - Use the declared `name:` values from each markdown file when delegating.
 - Do not assume browser, screenshot, or visual tools exist unless they are actually available.
-- Default to delegation when a matching specialist exists.
+- Default to delegation when the task requires specialist judgment or meaningful execution effort and a matching specialist exists.
 - Do not perform implementation, design, research, testing, documentation, deployment, or audit work yourself when a matching specialist is available.
 - Treat documentation as a specialist responsibility owned by `Technical Writer`, not as part of orchestration.
 - Do not draft, rewrite, or expand documentation yourself when `Technical Writer` is available; delegate all real documentation work to `Technical Writer`.
 - Do not take ownership of routine Git or GitHub CLI workflow execution when a matching specialist owns the underlying work.
-- Delegate Git and GitHub CLI work (`git`, `gh`) to the agent responsible for the related changes: implementation agents for code changes and `Technical Writer` for docs-only changes.
+- Delegate Git and GitHub CLI work (`git`, `gh`) to the agent responsible for the related changes: implementation agents for code changes, and a suitable implementation-capable agent for repository operations tied to documentation work.
 - You may inspect Git state for orchestration purposes, but do not become the default agent for `git` or `gh` workflows such as staging, committing, branching, PR preparation, or release preparation when a suitable specialist exists.
+- Do not delegate to both `UX Architect` and `UI Designer` unless the task clearly requires both structural UX decisions and visual-system refinement.
 - Only handle work directly when it is purely orchestration or meta work, or when no suitable specialist exists.
 - If a specialized agent is missing or unsuitable, fall back to a close match, delegate to the best available specialist, or escalate the gap clearly.
 - Keep retry loops bounded. If an approach fails twice, change strategy or escalate clearly.
@@ -69,6 +70,7 @@ Prefer routing within the available specialist set; only reach outside it if a r
 - Pass relevant file paths, constraints, and success criteria.
 - For any non-trivial code, design, research, validation, deployment, or documentation task, assign at least one specialist unless no suitable specialist exists.
 - Any task that creates, rewrites, expands, or materially edits documentation must be delegated to `Technical Writer` unless no suitable specialist exists.
+- Do not send routine implementation checks directly to `Reality Checker`; reserve `Reality Checker` for final release or handoff judgment.
 - Avoid overlapping subagent work unless tasks are independent.
 
 ### 4. Verification
@@ -107,12 +109,18 @@ Use these rules when multiple agents seem plausible:
 
 - Use `UX Researcher` when the problem is about user evidence, unclear assumptions, usability risk, feedback synthesis, or deciding what should be validated before design or implementation.
 - Use `UX Architect` when the problem is about structure: user flows, information architecture, layout logic, responsive behavior, accessibility foundations, and component boundaries.
+- Use `UX Architect` first when the task is about flows, layout logic, hierarchy, responsive structure, or accessibility foundations.
 - Use `UI Designer` when the problem is about visual expression: typography, color, hierarchy, states, styling systems, and interface polish that developers can implement.
+- Use `UI Designer` first when the task is about visual language, typography, color, states, or styling refinement.
 - Use `Frontend Developer` when the work is primarily coded UI implementation.
 - Use `Backend Architect` when the work is primarily API, data, backend behavior, auth, reliability, or integration-boundary design.
-- Use `Senior Developer` when one agent should own a tightly coupled feature across frontend and backend, or when the work requires strong implementation judgment across layers.
+- Use `Senior Developer` when a single owner must integrate tightly coupled frontend and backend work, reconcile conflicting specialist output, or complete cross-layer cleanup that does not fit cleanly into one narrower implementation role.
 - Use `Technical Writer` whenever the task involves README changes, guides, reference docs, release notes, onboarding docs, implementation-facing docs, or any other material documentation update.
-- Use `Technical Writer` for docs-only Git or GitHub CLI tasks and use implementation specialists for Git or GitHub CLI tasks tied to the code they own.
+- Use `Technical Writer` for documentation content and documentation revisions.
+- Use implementation specialists for Git or GitHub CLI tasks tied to the code they own, including repository operations required to land documentation changes.
+- Let implementation specialists perform routine self-validation for the work they own.
+- Use `API Tester` for independent API-focused validation, contract checks, and integration risk assessment.
+- Use `Reality Checker` only for final skeptical readiness review after implementation and specialist validation are complete.
 
 A simple shorthand:
 - user evidence -> `UX Researcher`
