@@ -26,6 +26,12 @@ Use `safe` mode explicitly:
 python3 scripts/agents_sync.py sync --pack a-team-plus --target ~/.config/opencode/agents --mode safe
 ```
 
+Use `yolo` mode only when you intentionally want to remove approval prompts for `ask` permissions in the installed target files:
+
+```bash
+python3 scripts/agents_sync.py sync --pack a-team --target ~/.config/opencode/agents --mode yolo
+```
+
 Preview changes first:
 
 ```bash
@@ -53,7 +59,7 @@ Target directory: ~/.config/opencode/agents
 Current state: target=existing, manifest=present, managed=11, drifted=0, missing=0, pack=a-team, mode=safe
 Action (sync/status/reset): sync
 Pack (a-team/a-team-plus): a-team-plus
-Mode (safe/trusted) [safe]:
+Mode (safe/trusted/yolo) [safe]:
 Preview: action=sync, target=/home/alice/.config/opencode/agents, pack=a-team-plus, mode=safe, force=no
 Planned changes: write=6, update=5, keep=1
 Proceed? [y/N]: y
@@ -70,10 +76,20 @@ python3 scripts/agents_sync.py reset --target ~/.config/opencode/agents --dry-ru
 
 - `safe` installs the curated pack with a stricter portable permission profile; it rewrites each agent's `permission` block in the target directory
 - `trusted` installs the curated pack exactly as authored in this repo, including the pack's current `permission` blocks
+- `yolo` installs the curated pack like `trusted`, then rewrites only literal `ask` values inside the frontmatter `permission` block to `allow`; it does not change `deny`, and it does not change anything outside that block
 
-Interactive mode defaults to `safe`, never defaults to `trusted`, and asks before enabling `force` when drift or unmanaged conflicts require it.
+Interactive mode defaults to `safe`, never defaults to `trusted` or `yolo`, asks before enabling `force` when drift or unmanaged conflicts require it, and requires the same typed `YOLO` confirmation before executing a `yolo` sync.
 
-Use `safe` when the target directory is a general-purpose live setup and you want a conservative default. Use `trusted` when you want the pack behavior in the target to match the curated source files exactly.
+Use `safe` when the target directory is a general-purpose live setup and you want a conservative default. Use `trusted` when you want the pack behavior in the target to match the curated source files exactly. Use `yolo` only in an isolated, disposable, or well-backed-up target directory.
+
+## YOLO Warning
+
+Before any non-dry-run `yolo` sync writes files, the script prints a strong warning and requires you to type `YOLO` exactly.
+
+- it removes approval gates for risky actions
+- agents may run commands, edit files, or access the network without asking again
+- mistakes or bad prompts can damage the workspace or expose data
+- use it only in an isolated, disposable, or well-backed-up target directory
 
 ## Manifest And Drift
 

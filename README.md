@@ -49,10 +49,11 @@ Each team pack uses the same layout:
 Use `scripts/agents_sync.py` when you want to install a curated pack into a real OpenCode agents directory outside this repository.
 
 - `sync` installs `a-team` or `a-team-plus` into a user-supplied target directory and writes a manifest/state file there
-- `safe` rewrites agent `permission` blocks to a stricter portable baseline; `trusted` installs the authored pack files as-is
+- `safe` rewrites agent `permission` blocks to a stricter portable baseline; `trusted` installs the authored pack files as-is; `yolo` installs authored files, then rewrites only literal frontmatter `permission` values from `ask` to `allow`
 - `status` shows whether the target still matches the last managed install
 - `reset` removes only files tracked by the manifest/state file
 - `interactive` walks through target selection, status review, action choice, preview, and final confirmation while reusing the same guarded sync/reset/status paths
+- `yolo` requires an extra typed `YOLO` confirmation before writes unless you use `--dry-run`, because it removes approval gates for risky actions in the target install
 - the source repo stays read-only during normal use, and the script never installs anything from `reference-agents/`
 - target-directory drift, missing managed files, or unmanaged filename conflicts block `sync` and `reset` unless you rerun with `--force`
 - `--dry-run` prints planned actions without changing the target directory

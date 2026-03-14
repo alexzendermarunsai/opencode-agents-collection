@@ -16,7 +16,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_NAME = ".opencode-agents-state.json"
 SUPPORTED_PACKS = ("a-team", "a-team-plus")
-SUPPORTED_MODES = ("safe", "trusted")
+SUPPORTED_MODES = ("safe", "trusted", "yolo")
 
 
 class SyncError(Exception):
@@ -112,6 +112,38 @@ def rewrite_permission_block(content: str, permission: dict[str, Any]) -> str:
     return "".join([opening_lines[0], *new_frontmatter, opening_lines[-1], body])
 
 
+def rewrite_permission_ask_to_allow(content: str) -> str:
+    opening_lines, frontmatter_lines, body = parse_frontmatter_sections(content)
+    start = None
+    end = None
+    for index, line in enumerate(frontmatter_lines):
+        if re.match(r"^permission:\s*$", line.rstrip("\n")):
+            start = index
+            end = index + 1
+            while end < len(frontmatter_lines):
+                candidate = frontmatter_lines[end]
+                if candidate.strip() and not candidate.startswith((" ", "\t")):
+                    break
+                end += 1
+            break
+    if start is None or end is None:
+        raise SyncError("missing permission block")
+
+    rewritten_permission_lines = [frontmatter_lines[start]]
+    for line in frontmatter_lines[start + 1 : end]:
+        newline = "\n" if line.endswith("\n") else ""
+        stripped = line[:-1] if newline else line
+        rewritten = re.sub(
+            r'^(\s*(?:"[^"]+"|[^:\n]+?)\s*:\s*)ask(\s*)$',
+            r"\1allow\2",
+            stripped,
+        )
+        rewritten_permission_lines.append(rewritten + newline)
+
+    new_frontmatter = frontmatter_lines[:start] + rewritten_permission_lines + frontmatter_lines[end:]
+    return "".join([opening_lines[0], *new_frontmatter, opening_lines[-1], body])
+
+
 def safe_permission_matrix(pack: str, agent_names: list[str]) -> dict[str, dict[str, Any]]:
     orchestrator_tasks = {"*": "deny"}
     for name in agent_names:
@@ -176,12 +208,32 @@ def list_source_agents(pack: str) -> list[AgentSource]:
 def render_agent_content(pack: str, mode: str, source: AgentSource, all_names: list[str]) -> str:
     if mode == "trusted":
         return source.authored_content
+    if mode == "yolo":
+        return rewrite_permission_ask_to_allow(source.authored_content)
     if mode == "safe":
         matrix = safe_permission_matrix(pack, all_names)
         if source.name not in matrix:
             raise SyncError(f"safe mode has no permission mapping for: {source.name}")
         return rewrite_permission_block(source.authored_content, matrix[source.name])
     raise SyncError(f"unsupported mode: {mode}")
+
+
+YOLO_WARNING_LINES = (
+    "WARNING: YOLO mode removes approval gates for risky actions.",
+    "Agents may run commands, edit files, or access the network without asking again.",
+    "Mistakes or bad prompts can damage the workspace or expose data.",
+    "Use YOLO mode only in an isolated, disposable, or well-backed-up target directory.",
+)
+
+
+def print_yolo_warning() -> None:
+    for line in YOLO_WARNING_LINES:
+        print(line)
+
+
+def confirm_yolo() -> bool:
+    print_yolo_warning()
+    return input("Type YOLO to continue: ").strip() == "YOLO"
 
 
 def atomic_write(path: Path, content: str) -> None:
@@ -511,6 +563,9 @@ def interactive_command(args: argparse.Namespace) -> int:
         if not prompt_yes_no("Proceed?", default=False):
             print("Cancelled.")
             return 0
+        if mode == "yolo" and not confirm_yolo():
+            print("Cancelled.")
+            return 0
         return sync_command(
             argparse.Namespace(
                 target=str(target),
@@ -518,6 +573,7 @@ def interactive_command(args: argparse.Namespace) -> int:
                 mode=mode,
                 dry_run=False,
                 force=force,
+                confirmed_yolo=mode == "yolo",
             )
         )
 
@@ -573,6 +629,11 @@ def sync_command(args: argparse.Namespace) -> int:
     if args.dry_run:
         print_actions(plan.planned_actions)
         return 0
+
+    if args.mode == "yolo" and not getattr(args, "confirmed_yolo", False):
+        if not confirm_yolo():
+            print("Cancelled.")
+            return 0
 
     target.mkdir(parents=True, exist_ok=True)
 

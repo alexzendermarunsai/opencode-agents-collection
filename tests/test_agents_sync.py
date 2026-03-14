@@ -68,6 +68,74 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertIn("  bash: ask\n", content)
             self.assertIn("  webfetch: deny\n", content)
 
+    def test_sync_yolo_rewrites_ask_to_allow_and_records_mode(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+
+            result = self.run_cli(
+                "sync",
+                "--pack",
+                "a-team",
+                "--target",
+                str(target),
+                "--mode",
+                "yolo",
+                input_text="YOLO\n",
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("WARNING: YOLO mode removes approval gates for risky actions.", result.stdout)
+            self.assertIn("Type YOLO to continue:", result.stdout)
+
+            writer = (target / "technical-writer.md").read_text(encoding="utf-8")
+            self.assertIn("  webfetch: allow\n", writer)
+
+            orchestrator = (target / "agents-orchestrator.md").read_text(encoding="utf-8")
+            self.assertIn("  bash: allow\n", orchestrator)
+            self.assertIn('    "*": deny\n', orchestrator)
+
+            manifest = json.loads((target / ".opencode-agents-state.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["mode"], "yolo")
+
+    def test_sync_yolo_cancels_without_confirmation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+
+            result = self.run_cli(
+                "sync",
+                "--pack",
+                "a-team",
+                "--target",
+                str(target),
+                "--mode",
+                "yolo",
+                input_text="\n",
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("Cancelled.", result.stdout)
+            self.assertFalse((target / ".opencode-agents-state.json").exists())
+            self.assertFalse((target / "frontend-developer.md").exists())
+
+    def test_sync_yolo_dry_run_does_not_require_confirmation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+
+            result = self.run_cli(
+                "sync",
+                "--pack",
+                "a-team",
+                "--target",
+                str(target),
+                "--mode",
+                "yolo",
+                "--dry-run",
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertNotIn("Type YOLO to continue:", result.stdout)
+            self.assertFalse((target / ".opencode-agents-state.json").exists())
+
     def test_sync_detects_drift_without_force(self):
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "agents"
@@ -294,6 +362,23 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertEqual(forced.returncode, 0, forced.stderr)
             self.assertIn("force=yes", forced.stdout)
             self.assertNotIn("manual edit", path.read_text(encoding="utf-8"))
+
+    def test_interactive_sync_yolo_requires_confirmation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+
+            result = self.run_cli(
+                "interactive",
+                input_text=f"{target}\nsync\na-team\nyolo\ny\nYOLO\n",
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn(f"Preview: action=sync, target={target}, pack=a-team, mode=yolo, force=no", result.stdout)
+            self.assertIn("WARNING: YOLO mode removes approval gates for risky actions.", result.stdout)
+            self.assertIn("Type YOLO to continue:", result.stdout)
+
+            manifest = json.loads((target / ".opencode-agents-state.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["mode"], "yolo")
 
 
 if __name__ == "__main__":
