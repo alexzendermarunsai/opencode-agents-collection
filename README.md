@@ -52,6 +52,7 @@ Use `scripts/agents_sync.py` when you want to install a curated pack into a real
 - `safe` rewrites agent `permission` blocks to a stricter portable baseline; `trusted` installs the authored pack files as-is
 - `status` shows whether the target still matches the last managed install
 - `reset` removes only files tracked by the manifest/state file
+- `interactive` walks through target selection, status review, action choice, preview, and final confirmation while reusing the same guarded sync/reset/status paths
 - the source repo stays read-only during normal use, and the script never installs anything from `reference-agents/`
 - target-directory drift, missing managed files, or unmanaged filename conflicts block `sync` and `reset` unless you rerun with `--force`
 - `--dry-run` prints planned actions without changing the target directory

@@ -11,11 +11,12 @@ SCRIPT = REPO_ROOT / "scripts" / "agents_sync.py"
 
 
 class AgentsSyncTests(unittest.TestCase):
-    def run_cli(self, *args, cwd=None):
+    def run_cli(self, *args, cwd=None, input_text=None):
         return subprocess.run(
             [sys.executable, str(SCRIPT), *args],
             cwd=cwd or str(REPO_ROOT),
             text=True,
+            input=input_text,
             capture_output=True,
             check=False,
         )
@@ -252,6 +253,47 @@ class AgentsSyncTests(unittest.TestCase):
             payload = json.loads(status.stdout)
             self.assertEqual(payload["pack"], "a-team-plus")
             self.assertIn("ai-engineer.md", payload["drifted_files"])
+
+    def test_interactive_sync_uses_guided_defaults(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+
+            result = self.run_cli(
+                "interactive",
+                input_text=f"{target}\nsync\na-team\n\ny\n",
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("Current state: target=missing, manifest=missing", result.stdout)
+            self.assertIn(f"Preview: action=sync, target={target}, pack=a-team, mode=safe, force=no", result.stdout)
+            self.assertTrue((target / ".opencode-agents-state.json").exists())
+
+    def test_interactive_sync_prompts_before_force(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+            initial = self.run_cli("sync", "--pack", "a-team", "--target", str(target))
+            self.assertEqual(initial.returncode, 0, initial.stderr)
+
+            path = target / "technical-writer.md"
+            path.write_text(path.read_text(encoding="utf-8") + "\nmanual edit\n", encoding="utf-8")
+
+            cancelled = self.run_cli(
+                "interactive",
+                input_text=f"{target}\nsync\na-team\n\nn\n",
+            )
+            self.assertEqual(cancelled.returncode, 0, cancelled.stderr)
+            self.assertIn("Needs force:", cancelled.stdout)
+            self.assertIn("Cancelled.", cancelled.stdout)
+            self.assertIn("manual edit", path.read_text(encoding="utf-8"))
+
+            forced = self.run_cli(
+                "interactive",
+                input_text=f"{target}\nsync\na-team\n\ny\ny\n",
+            )
+            self.assertEqual(forced.returncode, 0, forced.stderr)
+            self.assertIn("force=yes", forced.stdout)
+            self.assertNotIn("manual edit", path.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

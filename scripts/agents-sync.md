@@ -39,6 +39,26 @@ python3 scripts/agents_sync.py status --target ~/.config/opencode/agents
 python3 scripts/agents_sync.py status --target ~/.config/opencode/agents --json
 ```
 
+Run the guided interactive wrapper:
+
+```bash
+python3 scripts/agents_sync.py interactive
+```
+
+Example session:
+
+```text
+$ python3 scripts/agents_sync.py interactive
+Target directory: ~/.config/opencode/agents
+Current state: target=existing, manifest=present, managed=11, drifted=0, missing=0, pack=a-team, mode=safe
+Action (sync/status/reset): sync
+Pack (a-team/a-team-plus): a-team-plus
+Mode (safe/trusted) [safe]:
+Preview: action=sync, target=/home/alice/.config/opencode/agents, pack=a-team-plus, mode=safe, force=no
+Planned changes: write=6, update=5, keep=1
+Proceed? [y/N]: y
+```
+
 Remove only manifest-managed files:
 
 ```bash
@@ -50,6 +70,8 @@ python3 scripts/agents_sync.py reset --target ~/.config/opencode/agents --dry-ru
 
 - `safe` installs the curated pack with a stricter portable permission profile; it rewrites each agent's `permission` block in the target directory
 - `trusted` installs the curated pack exactly as authored in this repo, including the pack's current `permission` blocks
+
+Interactive mode defaults to `safe`, never defaults to `trusted`, and asks before enabling `force` when drift or unmanaged conflicts require it.
 
 Use `safe` when the target directory is a general-purpose live setup and you want a conservative default. Use `trusted` when you want the pack behavior in the target to match the curated source files exactly.
 
@@ -72,3 +94,5 @@ That includes cases like:
 - a same-named unmanaged file already exists where the script needs to install a file
 
 Use `--dry-run` to inspect planned writes, updates, removals, and keeps before making changes. Use `--force` only when you intentionally want to overwrite or clean up target-directory conflicts.
+
+The interactive wrapper does not bypass those checks; it surfaces the same force-required conditions and asks for explicit confirmation before rerunning with `force`.

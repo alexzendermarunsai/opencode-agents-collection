@@ -31,6 +31,21 @@ class AgentSource:
     authored_content: str
 
 
+@dataclass(frozen=True)
+class SyncPlan:
+    target: Path
+    rendered: dict[str, dict[str, str]]
+    stale_files: list[str]
+    planned_actions: list[str]
+
+
+@dataclass(frozen=True)
+class ResetPlan:
+    target: Path
+    manifest: dict[str, Any] | None
+    planned_actions: list[str]
+
+
 def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -335,6 +350,204 @@ def check_manifest_drift(target: Path, manifest: dict[str, Any] | None, force: b
         raise SyncError("managed target has drift; rerun with --force (" + "; ".join(problems) + ")")
 
 
+def plan_sync(target: Path, pack: str, mode: str, force: bool) -> SyncPlan:
+    sources = list_source_agents(pack)
+    all_names = [source.name for source in sources]
+    rendered: dict[str, dict[str, str]] = {}
+    for source in sources:
+        verify_no_symlink(target / source.filename, "target file")
+        rendered[source.filename] = {
+            "name": source.name,
+            "source": str(source.path.relative_to(REPO_ROOT)),
+            "content": render_agent_content(pack, mode, source, all_names),
+        }
+
+    existing_manifest = load_manifest(target)
+    check_manifest_drift(target, existing_manifest, force)
+
+    planned_actions: list[str] = []
+    existing_managed = set(manifest_files(existing_manifest, target).keys())
+    desired_files = set(rendered.keys())
+    stale_files = sorted(existing_managed - desired_files)
+    for filename in stale_files:
+        planned_actions.append(f"remove {managed_file_path(target, filename)}")
+
+    for filename, info in sorted(rendered.items()):
+        path = target / filename
+        if path.exists() and (not existing_manifest or filename not in existing_managed) and not force:
+            raise SyncError(f"unmanaged conflicting file exists: {path}; rerun with --force")
+        current_hash = file_hash_if_exists(path)
+        desired_hash = sha256_text(info["content"])
+        if current_hash == desired_hash:
+            planned_actions.append(f"keep {path}")
+        elif path.exists():
+            planned_actions.append(f"update {path}")
+        else:
+            planned_actions.append(f"write {path}")
+
+    planned_actions.append(f"write {manifest_path(target)}")
+    return SyncPlan(target=target, rendered=rendered, stale_files=stale_files, planned_actions=planned_actions)
+
+
+def plan_reset(target: Path, force: bool) -> ResetPlan:
+    manifest = load_manifest(target)
+    if not manifest:
+        return ResetPlan(target=target, manifest=None, planned_actions=[])
+
+    check_manifest_drift(target, manifest, force)
+    planned_actions = []
+    for filename in sorted(manifest_files(manifest, target)):
+        path = managed_file_path(target, filename)
+        planned_actions.append(f"remove {path}")
+    planned_actions.append(f"remove {manifest_path(target)}")
+    return ResetPlan(target=target, manifest=manifest, planned_actions=planned_actions)
+
+
+def print_actions(planned_actions: list[str]) -> None:
+    for action in planned_actions:
+        print(action)
+
+
+def summarize_status(payload: dict[str, Any]) -> str:
+    target_state = "existing" if Path(payload["target"]).exists() else "missing"
+    summary = [
+        f"target={target_state}",
+        f"manifest={'present' if payload['manifest'] else 'missing'}",
+        f"managed={payload['managed_files']}",
+        f"drifted={len(payload['drifted_files'])}",
+        f"missing={len(payload['missing_files'])}",
+    ]
+    if payload.get("pack"):
+        summary.append(f"pack={payload['pack']}")
+        summary.append(f"mode={payload['mode']}")
+    return ", ".join(summary)
+
+
+def summarize_actions(planned_actions: list[str]) -> str:
+    counts = {"write": 0, "update": 0, "remove": 0, "keep": 0}
+    for action in planned_actions:
+        verb = action.split(" ", 1)[0]
+        if verb in counts:
+            counts[verb] += 1
+    parts = [f"{verb}={count}" for verb, count in counts.items() if count]
+    return ", ".join(parts) if parts else "no changes"
+
+
+def prompt(message: str, default: str | None = None) -> str:
+    suffix = f" [{default}]" if default is not None else ""
+    value = input(f"{message}{suffix}: ").strip()
+    return value or (default or "")
+
+
+def prompt_choice(message: str, choices: tuple[str, ...], default: str | None = None) -> str:
+    while True:
+        value = prompt(f"{message} ({'/'.join(choices)})", default)
+        if value in choices:
+            return value
+        print(f"Please choose one of: {', '.join(choices)}")
+
+
+def prompt_yes_no(message: str, default: bool = False) -> bool:
+    label = "Y/n" if default else "y/N"
+    while True:
+        value = input(f"{message} [{label}]: ").strip().lower()
+        if not value:
+            return default
+        if value in {"y", "yes"}:
+            return True
+        if value in {"n", "no"}:
+            return False
+        print("Please answer y or n.")
+
+
+def interactive_command(args: argparse.Namespace) -> int:
+    target_input = prompt("Target directory")
+    target = ensure_safe_target(target_input, allow_create=True)
+
+    payload = status_payload(target)
+    print(f"Current state: {summarize_status(payload)}")
+
+    action = prompt_choice("Action", ("sync", "status", "reset"))
+
+    if action == "status":
+        print("Preview: show current managed state")
+        if not prompt_yes_no("Proceed?", default=False):
+            print("Cancelled.")
+            return 0
+        print(f"target: {payload['target']}")
+        print(f"manifest: {'present' if payload['manifest'] else 'missing'}")
+        if payload.get("pack"):
+            print(f"pack: {payload['pack']}")
+            print(f"mode: {payload['mode']}")
+        print(f"managed files: {payload['managed_files']}")
+        print(f"ok files: {len(payload['ok_files'])}")
+        print(f"drifted files: {len(payload['drifted_files'])}")
+        if payload["drifted_files"]:
+            print("  " + ", ".join(payload["drifted_files"]))
+        print(f"missing files: {len(payload['missing_files'])}")
+        if payload["missing_files"]:
+            print("  " + ", ".join(payload["missing_files"]))
+        return 0
+
+    force = False
+    if action == "sync":
+        pack = prompt_choice("Pack", SUPPORTED_PACKS)
+        mode = prompt_choice("Mode", SUPPORTED_MODES, default="safe")
+        try:
+            plan = plan_sync(target, pack, mode, force=False)
+        except SyncError as exc:
+            message = str(exc)
+            if "rerun with --force" not in message:
+                raise
+            print(f"Needs force: {message}")
+            if not prompt_yes_no("Continue with force?", default=False):
+                print("Cancelled.")
+                return 0
+            force = True
+            plan = plan_sync(target, pack, mode, force=True)
+
+        print(f"Preview: action=sync, target={target}, pack={pack}, mode={mode}, force={'yes' if force else 'no'}")
+        print(f"Planned changes: {summarize_actions(plan.planned_actions)}")
+        if not prompt_yes_no("Proceed?", default=False):
+            print("Cancelled.")
+            return 0
+        return sync_command(
+            argparse.Namespace(
+                target=str(target),
+                pack=pack,
+                mode=mode,
+                dry_run=False,
+                force=force,
+            )
+        )
+
+    try:
+        plan = plan_reset(target, force=False)
+    except SyncError as exc:
+        message = str(exc)
+        if "rerun with --force" not in message:
+            raise
+        print(f"Needs force: {message}")
+        if not prompt_yes_no("Continue with force?", default=False):
+            print("Cancelled.")
+            return 0
+        force = True
+        plan = plan_reset(target, force=True)
+
+    if not target.exists() or not plan.manifest:
+        print("Preview: reset has nothing to remove")
+    else:
+        print(f"Preview: action=reset, target={target}, force={'yes' if force else 'no'}")
+        print(f"Planned changes: {summarize_actions(plan.planned_actions)}")
+    if not prompt_yes_no("Proceed?", default=False):
+        print("Cancelled.")
+        return 0
+    if not target.exists():
+        print("nothing to reset")
+        return 0
+    return reset_command(argparse.Namespace(target=str(target), dry_run=False, force=force))
+
+
 def build_manifest(pack: str, mode: str, target: Path, rendered: dict[str, dict[str, str]]) -> dict[str, Any]:
     return {
         "version": 1,
@@ -355,61 +568,25 @@ def build_manifest(pack: str, mode: str, target: Path, rendered: dict[str, dict[
 
 def sync_command(args: argparse.Namespace) -> int:
     target = ensure_safe_target(args.target, allow_create=True)
-    sources = list_source_agents(args.pack)
-    all_names = [source.name for source in sources]
-    rendered: dict[str, dict[str, str]] = {}
-    for source in sources:
-        verify_no_symlink(target / source.filename, "target file")
-        rendered[source.filename] = {
-            "name": source.name,
-            "source": str(source.path.relative_to(REPO_ROOT)),
-            "content": render_agent_content(args.pack, args.mode, source, all_names),
-        }
-
-    existing_manifest = load_manifest(target)
-    check_manifest_drift(target, existing_manifest, args.force)
-
-    planned_actions: list[str] = []
-    existing_managed = set(manifest_files(existing_manifest, target).keys())
-    desired_files = set(rendered.keys())
-    stale_files = sorted(existing_managed - desired_files)
-    for filename in stale_files:
-        planned_actions.append(f"remove {managed_file_path(target, filename)}")
-
-    for filename, info in sorted(rendered.items()):
-        path = target / filename
-        if path.exists() and (not existing_manifest or filename not in existing_managed) and not args.force:
-            raise SyncError(f"unmanaged conflicting file exists: {path}; rerun with --force")
-        current_hash = file_hash_if_exists(path)
-        desired_hash = sha256_text(info["content"])
-        if current_hash == desired_hash:
-            planned_actions.append(f"keep {path}")
-        elif path.exists():
-            planned_actions.append(f"update {path}")
-        else:
-            planned_actions.append(f"write {path}")
-
-    planned_actions.append(f"write {manifest_path(target)}")
+    plan = plan_sync(target, args.pack, args.mode, args.force)
 
     if args.dry_run:
-        for action in planned_actions:
-            print(action)
+        print_actions(plan.planned_actions)
         return 0
 
     target.mkdir(parents=True, exist_ok=True)
 
-    for filename in stale_files:
+    for filename in plan.stale_files:
         path = managed_file_path(target, filename)
         if path.exists():
             verify_no_symlink(path, "managed file")
             path.unlink()
 
-    for filename, info in sorted(rendered.items()):
+    for filename, info in sorted(plan.rendered.items()):
         atomic_write(target / filename, info["content"])
 
-    atomic_write(manifest_path(target), json.dumps(build_manifest(args.pack, args.mode, target, rendered), indent=2) + "\n")
-    for action in planned_actions:
-        print(action)
+    atomic_write(manifest_path(target), json.dumps(build_manifest(args.pack, args.mode, target, plan.rendered), indent=2) + "\n")
+    print_actions(plan.planned_actions)
     return 0
 
 
@@ -454,31 +631,22 @@ def status_command(args: argparse.Namespace) -> int:
 
 def reset_command(args: argparse.Namespace) -> int:
     target = ensure_safe_target(args.target)
-    manifest = load_manifest(target)
-    if not manifest:
+    plan = plan_reset(target, args.force)
+    if not plan.manifest:
         print("nothing to reset")
         return 0
 
-    check_manifest_drift(target, manifest, args.force)
-    planned_actions = []
-    for filename in sorted(manifest_files(manifest, target)):
-        path = managed_file_path(target, filename)
-        planned_actions.append(f"remove {path}")
-    planned_actions.append(f"remove {manifest_path(target)}")
-
     if args.dry_run:
-        for action in planned_actions:
-            print(action)
+        print_actions(plan.planned_actions)
         return 0
 
-    for filename in sorted(manifest_files(manifest, target)):
+    for filename in sorted(manifest_files(plan.manifest, target)):
         path = managed_file_path(target, filename)
         if path.exists():
             verify_no_symlink(path, "managed file")
             path.unlink()
     manifest_path(target).unlink(missing_ok=True)
-    for action in planned_actions:
-        print(action)
+    print_actions(plan.planned_actions)
     return 0
 
 
@@ -504,6 +672,9 @@ def build_parser() -> argparse.ArgumentParser:
     reset.add_argument("--dry-run", action="store_true")
     reset.add_argument("--force", action="store_true")
     reset.set_defaults(func=reset_command)
+
+    interactive = subparsers.add_parser("interactive", help="guided interactive wrapper around sync, status, and reset")
+    interactive.set_defaults(func=interactive_command)
 
     return parser
 
