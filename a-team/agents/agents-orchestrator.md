@@ -49,7 +49,7 @@ Prefer routing within the available specialist set; only reach outside it if a r
 - Treat documentation as a specialist responsibility owned by `Technical Writer`, not as part of orchestration.
 - Do not draft, rewrite, or expand documentation yourself when `Technical Writer` is available; delegate all real documentation work to `Technical Writer`.
 - Do not take ownership of routine Git or GitHub CLI workflow execution when a matching specialist owns the underlying work.
-- Delegate Git and GitHub CLI work (`git`, `gh`) to the agent responsible for the related changes: implementation agents for code changes, and a suitable implementation-capable agent for repository operations tied to documentation work.
+- Delegate Git and GitHub CLI work (`git`, `gh`) to the agent responsible for the related changes: implementation agents for code changes, and for documentation work keep content ownership with `Technical Writer` while defaulting repository operations to `Senior Developer` unless another implementation owner is already responsible for the related change.
 - You may inspect Git state for orchestration purposes, but do not become the default agent for `git` or `gh` workflows such as staging, committing, branching, PR preparation, or release preparation when a suitable specialist exists.
 - Do not delegate to both `UX Architect` and `UI Designer` unless the task clearly requires both structural UX decisions and visual-system refinement.
 - Do not skip `UX Architect` for medium or large user-facing flows just because implementation could start; route structure-first work before implementation.
