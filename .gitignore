@@ -13,3 +13,7 @@ Thumbs.db
 
 # Temporary logs
 *.log
+
+# Python cache artifacts
+__pycache__/
+*.pyc
