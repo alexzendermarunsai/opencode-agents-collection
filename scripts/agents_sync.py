@@ -1,0 +1,522 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import re
+import sys
+import tempfile
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+MANIFEST_NAME = ".opencode-agents-state.json"
+SUPPORTED_PACKS = ("a-team", "a-team-plus")
+SUPPORTED_MODES = ("safe", "trusted")
+
+
+class SyncError(Exception):
+    pass
+
+
+@dataclass(frozen=True)
+class AgentSource:
+    path: Path
+    filename: str
+    name: str
+    authored_content: str
+
+
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def read_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
+def parse_frontmatter_sections(content: str) -> tuple[list[str], list[str], str]:
+    lines = content.splitlines(keepends=True)
+    if not lines or lines[0].strip() != "---":
+        raise SyncError("missing opening frontmatter marker")
+
+    end_index = None
+    for index in range(1, len(lines)):
+        if lines[index].strip() == "---":
+            end_index = index
+            break
+    if end_index is None:
+        raise SyncError("missing closing frontmatter marker")
+
+    return lines[: end_index + 1], lines[1:end_index], "".join(lines[end_index + 1 :])
+
+
+def frontmatter_name(content: str) -> str:
+    _, frontmatter_lines, _ = parse_frontmatter_sections(content)
+    for line in frontmatter_lines:
+        match = re.match(r"^name:\s*(.+?)\s*$", line.rstrip("\n"))
+        if match:
+            return match.group(1)
+    raise SyncError("missing frontmatter name")
+
+
+def build_permission_lines(permission: dict[str, Any]) -> list[str]:
+    lines = ["permission:\n"]
+    for key, value in permission.items():
+        if isinstance(value, dict):
+            lines.append(f"  {key}:\n")
+            for nested_key, nested_value in value.items():
+                lines.append(f'    "{nested_key}": {nested_value}\n')
+        else:
+            lines.append(f"  {key}: {value}\n")
+    return lines
+
+
+def rewrite_permission_block(content: str, permission: dict[str, Any]) -> str:
+    opening_lines, frontmatter_lines, body = parse_frontmatter_sections(content)
+    start = None
+    end = None
+    for index, line in enumerate(frontmatter_lines):
+        if re.match(r"^permission:\s*$", line.rstrip("\n")):
+            start = index
+            end = index + 1
+            while end < len(frontmatter_lines):
+                candidate = frontmatter_lines[end]
+                if candidate.strip() and not candidate.startswith((" ", "\t")):
+                    break
+                end += 1
+            break
+    if start is None or end is None:
+        raise SyncError("missing permission block")
+
+    new_frontmatter = frontmatter_lines[:start] + build_permission_lines(permission) + frontmatter_lines[end:]
+    return "".join([opening_lines[0], *new_frontmatter, opening_lines[-1], body])
+
+
+def safe_permission_matrix(pack: str, agent_names: list[str]) -> dict[str, dict[str, Any]]:
+    orchestrator_tasks = {"*": "deny"}
+    for name in agent_names:
+        if name != "Agents Orchestrator":
+            orchestrator_tasks[name] = "allow"
+
+    common = {
+        "Agents Orchestrator": {
+            "edit": "deny",
+            "bash": "deny",
+            "webfetch": "deny",
+            "task": orchestrator_tasks,
+        },
+        "Senior Project Manager": {"edit": "deny", "bash": "deny", "webfetch": "deny"},
+        "UX Architect": {"edit": "deny", "bash": "deny", "webfetch": "deny"},
+        "UI Designer": {"edit": "deny", "bash": "deny", "webfetch": "deny"},
+        "Reality Checker": {"edit": "deny", "bash": "deny", "webfetch": "deny"},
+        "UX Researcher": {"edit": "deny", "bash": "deny", "webfetch": "ask"},
+        "API Tester": {"edit": "deny", "bash": "deny", "webfetch": "ask"},
+        "Frontend Developer": {"edit": "allow", "bash": "deny", "webfetch": "deny"},
+        "Backend Architect": {"edit": "allow", "bash": "deny", "webfetch": "deny"},
+        "Senior Developer": {"edit": "allow", "bash": "deny", "webfetch": "deny"},
+        "Technical Writer": {"edit": "allow", "bash": "deny", "webfetch": "ask"},
+    }
+    if pack == "a-team":
+        return common
+    if pack == "a-team-plus":
+        common.update(
+            {
+                "Performance Benchmarker": {"edit": "deny", "bash": "deny", "webfetch": "deny"},
+                "Security Engineer": {"edit": "deny", "bash": "deny", "webfetch": "deny"},
+                "Accessibility Auditor": {"edit": "deny", "bash": "deny", "webfetch": "deny"},
+                "DevOps Automator": {"edit": "deny", "bash": "deny", "webfetch": "deny"},
+                "AI Engineer": {"edit": "deny", "bash": "deny", "webfetch": "deny"},
+                "Rapid Prototyper": {"edit": "deny", "bash": "deny", "webfetch": "deny"},
+            }
+        )
+        return common
+    raise SyncError(f"unsupported pack: {pack}")
+
+
+def list_source_agents(pack: str) -> list[AgentSource]:
+    if pack not in SUPPORTED_PACKS:
+        raise SyncError(f"unsupported pack: {pack}")
+    pack_dir = REPO_ROOT / pack / "agents"
+    sources: list[AgentSource] = []
+    for path in sorted(pack_dir.glob("*.md")):
+        content = read_text(path)
+        sources.append(
+            AgentSource(
+                path=path,
+                filename=path.name,
+                name=frontmatter_name(content),
+                authored_content=content,
+            )
+        )
+    if not sources:
+        raise SyncError(f"no source agents found for pack: {pack}")
+    return sources
+
+
+def render_agent_content(pack: str, mode: str, source: AgentSource, all_names: list[str]) -> str:
+    if mode == "trusted":
+        return source.authored_content
+    if mode == "safe":
+        matrix = safe_permission_matrix(pack, all_names)
+        if source.name not in matrix:
+            raise SyncError(f"safe mode has no permission mapping for: {source.name}")
+        return rewrite_permission_block(source.authored_content, matrix[source.name])
+    raise SyncError(f"unsupported mode: {mode}")
+
+
+def atomic_write(path: Path, content: str) -> None:
+    fd, temp_path = tempfile.mkstemp(prefix=f".{path.name}.", dir=str(path.parent))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_path, path)
+    finally:
+        if os.path.exists(temp_path):
+            os.unlink(temp_path)
+
+
+def manifest_path(target: Path) -> Path:
+    return target / MANIFEST_NAME
+
+
+def validate_managed_filename(filename: str) -> str:
+    if not isinstance(filename, str) or not filename:
+        raise SyncError("manifest contains invalid managed filename")
+    if Path(filename).is_absolute():
+        raise SyncError(f"manifest contains unsafe managed filename: {filename}")
+    if any(separator and separator in filename for separator in (os.sep, os.altsep, "/", "\\")):
+        raise SyncError(f"manifest contains unsafe managed filename: {filename}")
+    parts = Path(filename).parts
+    if len(parts) != 1 or parts[0] in {".", ".."}:
+        raise SyncError(f"manifest contains unsafe managed filename: {filename}")
+    return filename
+
+
+def managed_file_path(target: Path, filename: str) -> Path:
+    safe_filename = validate_managed_filename(filename)
+    path = target / safe_filename
+    try:
+        path.relative_to(target)
+    except ValueError as exc:
+        raise SyncError(f"manifest contains unsafe managed filename: {filename}") from exc
+    return path
+
+
+def manifest_files(manifest: dict[str, Any] | None, target: Path) -> dict[str, dict[str, Any]]:
+    if not manifest:
+        return {}
+    files = manifest.get("files", {})
+    if not isinstance(files, dict):
+        raise SyncError("manifest files entry must be an object")
+
+    validated: dict[str, dict[str, Any]] = {}
+    for filename, info in files.items():
+        safe_filename = validate_managed_filename(filename)
+        if not isinstance(info, dict):
+            raise SyncError(f"manifest entry for {safe_filename} must be an object")
+        managed_file_path(target, safe_filename)
+        validated[safe_filename] = info
+    return validated
+
+
+def load_manifest(target: Path) -> dict[str, Any] | None:
+    path = manifest_path(target)
+    if not path.exists():
+        return None
+    if path.is_symlink():
+        raise SyncError("manifest path is a symlink")
+    try:
+        return json.loads(read_text(path))
+    except json.JSONDecodeError as exc:
+        raise SyncError(f"invalid manifest JSON: {exc}") from exc
+
+
+def ensure_safe_target(target_arg: str, *, allow_create: bool = False) -> Path:
+    if not target_arg or not target_arg.strip():
+        raise SyncError("target path must not be empty")
+
+    target_input = Path(target_arg).expanduser()
+    if target_input.exists():
+        if not target_input.is_dir():
+            raise SyncError("target must be a directory")
+        if target_input.is_symlink():
+            raise SyncError("target directory must not be a symlink")
+        unresolved_absolute = Path(os.path.abspath(target_input))
+        target = target_input.resolve()
+    else:
+        if not allow_create:
+            raise SyncError("target directory must already exist")
+
+        existing_parent = target_input.parent
+        missing_parts: list[str] = [target_input.name]
+        while not existing_parent.exists():
+            missing_parts.append(existing_parent.name)
+            existing_parent = existing_parent.parent
+
+        if not existing_parent.is_dir():
+            raise SyncError("target parent must be a directory")
+        if existing_parent.is_symlink():
+            raise SyncError("target directory must not traverse symlinks")
+
+        unresolved_parent = Path(os.path.abspath(existing_parent))
+        resolved_parent = existing_parent.resolve()
+        if unresolved_parent != resolved_parent:
+            raise SyncError("target directory must not traverse symlinks")
+
+        unresolved_absolute = Path(os.path.abspath(target_input))
+        target = resolved_parent.joinpath(*reversed(missing_parts))
+
+    home = Path.home().resolve()
+    repo_root = REPO_ROOT.resolve()
+
+    if target_input.exists() and unresolved_absolute != target:
+        raise SyncError("target directory must not traverse symlinks")
+
+    if target == Path("/"):
+        raise SyncError("refusing to operate on /")
+    if target == home:
+        raise SyncError("refusing to operate on home root")
+    if any(part == ".git" for part in target.parts):
+        raise SyncError("refusing to operate on .git path")
+    if target == repo_root:
+        raise SyncError("refusing to operate on source repo root")
+    if repo_root in target.parents:
+        raise SyncError("refusing to operate inside source repo")
+    return target
+
+
+def verify_no_symlink(path: Path, label: str) -> None:
+    if path.is_symlink():
+        raise SyncError(f"{label} is a symlink: {path}")
+
+
+def file_hash_if_exists(path: Path) -> str | None:
+    if not path.exists():
+        return None
+    return sha256_text(read_text(path))
+
+
+def managed_state(target: Path, manifest: dict[str, Any] | None) -> tuple[list[str], list[str], list[str]]:
+    if not manifest:
+        return [], [], []
+    files = manifest_files(manifest, target)
+    ok: list[str] = []
+    drifted: list[str] = []
+    missing: list[str] = []
+    for rel_name, info in sorted(files.items()):
+        path = managed_file_path(target, rel_name)
+        verify_no_symlink(path, "managed file")
+        if not path.exists():
+            missing.append(rel_name)
+            continue
+        current_hash = file_hash_if_exists(path)
+        if current_hash != info.get("installed_sha256"):
+            drifted.append(rel_name)
+        else:
+            ok.append(rel_name)
+    return ok, drifted, missing
+
+
+def check_manifest_drift(target: Path, manifest: dict[str, Any] | None, force: bool) -> None:
+    _, drifted, missing = managed_state(target, manifest)
+    if (drifted or missing) and not force:
+        problems = []
+        if drifted:
+            problems.append("drifted files: " + ", ".join(drifted))
+        if missing:
+            problems.append("missing files: " + ", ".join(missing))
+        raise SyncError("managed target has drift; rerun with --force (" + "; ".join(problems) + ")")
+
+
+def build_manifest(pack: str, mode: str, target: Path, rendered: dict[str, dict[str, str]]) -> dict[str, Any]:
+    return {
+        "version": 1,
+        "pack": pack,
+        "mode": mode,
+        "repo_root": str(REPO_ROOT.resolve()),
+        "target": str(target),
+        "files": {
+            filename: {
+                "name": info["name"],
+                "source": info["source"],
+                "installed_sha256": sha256_text(info["content"]),
+            }
+            for filename, info in sorted(rendered.items())
+        },
+    }
+
+
+def sync_command(args: argparse.Namespace) -> int:
+    target = ensure_safe_target(args.target, allow_create=True)
+    sources = list_source_agents(args.pack)
+    all_names = [source.name for source in sources]
+    rendered: dict[str, dict[str, str]] = {}
+    for source in sources:
+        verify_no_symlink(target / source.filename, "target file")
+        rendered[source.filename] = {
+            "name": source.name,
+            "source": str(source.path.relative_to(REPO_ROOT)),
+            "content": render_agent_content(args.pack, args.mode, source, all_names),
+        }
+
+    existing_manifest = load_manifest(target)
+    check_manifest_drift(target, existing_manifest, args.force)
+
+    planned_actions: list[str] = []
+    existing_managed = set(manifest_files(existing_manifest, target).keys())
+    desired_files = set(rendered.keys())
+    stale_files = sorted(existing_managed - desired_files)
+    for filename in stale_files:
+        planned_actions.append(f"remove {managed_file_path(target, filename)}")
+
+    for filename, info in sorted(rendered.items()):
+        path = target / filename
+        if path.exists() and (not existing_manifest or filename not in existing_managed) and not args.force:
+            raise SyncError(f"unmanaged conflicting file exists: {path}; rerun with --force")
+        current_hash = file_hash_if_exists(path)
+        desired_hash = sha256_text(info["content"])
+        if current_hash == desired_hash:
+            planned_actions.append(f"keep {path}")
+        elif path.exists():
+            planned_actions.append(f"update {path}")
+        else:
+            planned_actions.append(f"write {path}")
+
+    planned_actions.append(f"write {manifest_path(target)}")
+
+    if args.dry_run:
+        for action in planned_actions:
+            print(action)
+        return 0
+
+    target.mkdir(parents=True, exist_ok=True)
+
+    for filename in stale_files:
+        path = managed_file_path(target, filename)
+        if path.exists():
+            verify_no_symlink(path, "managed file")
+            path.unlink()
+
+    for filename, info in sorted(rendered.items()):
+        atomic_write(target / filename, info["content"])
+
+    atomic_write(manifest_path(target), json.dumps(build_manifest(args.pack, args.mode, target, rendered), indent=2) + "\n")
+    for action in planned_actions:
+        print(action)
+    return 0
+
+
+def status_payload(target: Path) -> dict[str, Any]:
+    manifest = load_manifest(target)
+    ok, drifted, missing = managed_state(target, manifest)
+    payload = {
+        "target": str(target),
+        "manifest": manifest is not None,
+        "managed_files": len(manifest_files(manifest, target)),
+        "ok_files": ok,
+        "drifted_files": drifted,
+        "missing_files": missing,
+    }
+    if manifest:
+        payload["pack"] = manifest.get("pack")
+        payload["mode"] = manifest.get("mode")
+    return payload
+
+
+def status_command(args: argparse.Namespace) -> int:
+    target = ensure_safe_target(args.target)
+    payload = status_payload(target)
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(f"target: {payload['target']}")
+        print(f"manifest: {'present' if payload['manifest'] else 'missing'}")
+        if payload.get("pack"):
+            print(f"pack: {payload['pack']}")
+            print(f"mode: {payload['mode']}")
+        print(f"managed files: {payload['managed_files']}")
+        print(f"ok files: {len(payload['ok_files'])}")
+        print(f"drifted files: {len(payload['drifted_files'])}")
+        if payload["drifted_files"]:
+            print("  " + ", ".join(payload["drifted_files"]))
+        print(f"missing files: {len(payload['missing_files'])}")
+        if payload["missing_files"]:
+            print("  " + ", ".join(payload["missing_files"]))
+    return 0
+
+
+def reset_command(args: argparse.Namespace) -> int:
+    target = ensure_safe_target(args.target)
+    manifest = load_manifest(target)
+    if not manifest:
+        print("nothing to reset")
+        return 0
+
+    check_manifest_drift(target, manifest, args.force)
+    planned_actions = []
+    for filename in sorted(manifest_files(manifest, target)):
+        path = managed_file_path(target, filename)
+        planned_actions.append(f"remove {path}")
+    planned_actions.append(f"remove {manifest_path(target)}")
+
+    if args.dry_run:
+        for action in planned_actions:
+            print(action)
+        return 0
+
+    for filename in sorted(manifest_files(manifest, target)):
+        path = managed_file_path(target, filename)
+        if path.exists():
+            verify_no_symlink(path, "managed file")
+            path.unlink()
+    manifest_path(target).unlink(missing_ok=True)
+    for action in planned_actions:
+        print(action)
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Sync curated OpenCode agent packs into a target directory.")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    sync = subparsers.add_parser("sync", help="sync a curated pack into a target directory")
+    sync.add_argument("--pack", required=True, choices=SUPPORTED_PACKS)
+    sync.add_argument("--target", required=True)
+    sync.add_argument("--mode", default="safe", choices=SUPPORTED_MODES)
+    sync.add_argument("--dry-run", action="store_true")
+    sync.add_argument("--force", action="store_true")
+    sync.set_defaults(func=sync_command)
+
+    status = subparsers.add_parser("status", help="show managed sync state for a target directory")
+    status.add_argument("--target", required=True)
+    status.add_argument("--json", action="store_true")
+    status.set_defaults(func=status_command)
+
+    reset = subparsers.add_parser("reset", help="remove only manifest-managed files from a target directory")
+    reset.add_argument("--target", required=True)
+    reset.add_argument("--dry-run", action="store_true")
+    reset.add_argument("--force", action="store_true")
+    reset.set_defaults(func=reset_command)
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    try:
+        return args.func(args)
+    except SyncError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
