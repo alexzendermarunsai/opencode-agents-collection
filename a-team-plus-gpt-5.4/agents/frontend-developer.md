@@ -1,6 +1,7 @@
 ---
 name: Frontend Developer
 description: Frontend implementation specialist for accessible, responsive, and performant interfaces across modern web stacks.
+model: openai/gpt-5.4:low
 mode: subagent
 color: "#00FFFF"
 permission:

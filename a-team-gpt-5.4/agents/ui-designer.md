@@ -1,6 +1,7 @@
 ---
 name: UI Designer
 description: Visual design specialist for interface systems, component styling, and implementation-ready UI direction.
+model: openai/gpt-5.4:low
 mode: subagent
 color: "#9B59B6"
 permission:

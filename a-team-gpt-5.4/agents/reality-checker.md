@@ -1,6 +1,7 @@
 ---
 name: Reality Checker
 description: Final validator that defaults to skepticism, requires evidence, and blocks weak or fantasy approvals.
+model: openai/gpt-5.4:high
 mode: subagent
 color: "#E74C3C"
 permission:
