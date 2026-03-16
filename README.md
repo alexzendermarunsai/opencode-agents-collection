@@ -7,7 +7,9 @@ For normal day-to-day use, sync a curated pack into your live OpenCode agents di
 ## Team Packs
 
 - `a-team/` - lean, balanced product-delivery workflow for planning, discovery, design, implementation, validation, and documentation
+- `a-team-gpt-5.4/` - GPT-5.4-optimized variant of `a-team` with the same specialist roster, a GPT-5.4-tuned orchestrator, and GPT-5.4-focused pack guidance
 - `a-team-plus/` - expanded shipping workflow that adds deployment, performance, security, accessibility, AI, and rapid prototyping coverage
+- `a-team-plus-gpt-5.4/` - GPT-5.4-optimized variant of `a-team-plus` with the same specialist roster, a GPT-5.4-tuned orchestrator, and GPT-5.4-focused pack guidance
 
 ## Reference Agents
 
@@ -22,12 +24,24 @@ Choose `a-team` when:
 - deployment and infrastructure are occasional needs, not default workflow steps
 - you prefer a smaller specialist set with lower coordination overhead
 
+Choose `a-team-gpt-5.4` when:
+
+- you want the `a-team` specialist set with a GPT-5.4-tuned orchestrator
+- GPT-5.4 is your primary model and you want that choice reflected in the pack guidance
+- the leaner `a-team` workflow fits, and model-specific orchestration is the main differentiator
+
 Choose `a-team-plus` when:
 
 - the work includes deployment, CI/CD, or environment automation
 - performance, security, or accessibility need to be first-class review lanes
 - the feature includes AI integration or you want a dedicated prototype/MVP specialist
 - you want a more comprehensive release workflow out of the box
+
+Choose `a-team-plus-gpt-5.4` when:
+
+- you want the `a-team-plus` specialist set with a GPT-5.4-tuned orchestrator
+- GPT-5.4 is your primary model and you want that choice reflected in the pack guidance
+- the broader `a-team-plus` workflow fits, and model-specific orchestration is the main differentiator
 
 ## Structure
 
@@ -48,7 +62,7 @@ Each team pack uses the same layout:
 
 Use `scripts/agents_sync.py` when you want to install a curated pack into a real OpenCode agents directory outside this repository.
 
-- `sync` installs `a-team` or `a-team-plus` into a user-supplied target directory and writes a manifest/state file there
+- `sync` installs `a-team`, `a-team-gpt-5.4`, `a-team-plus`, or `a-team-plus-gpt-5.4` into a user-supplied target directory and writes a manifest/state file there
 - `safe` rewrites agent `permission` blocks to a stricter portable baseline; `trusted` installs the authored pack files as-is; `yolo` installs authored files, then rewrites only literal frontmatter `permission` values from `ask` to `allow`
 - `status` shows whether the target still matches the last managed install
 - `reset` removes only files tracked by the manifest/state file

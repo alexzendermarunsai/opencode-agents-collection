@@ -10,6 +10,10 @@ Use `scripts/agents_sync.py` to install a curated pack into a live OpenCode agen
 
 The script only installs from curated pack directories. It never installs from `reference-agents/`.
 
+Supported packs: `a-team`, `a-team-gpt-5.4`, `a-team-plus`, and `a-team-plus-gpt-5.4`.
+
+As a quick rule: use `a-team` packs for the leaner workflow, `a-team-plus` packs for broader shipping coverage, and the `*-gpt-5.4` variants when GPT-5.4 is your primary model.
+
 ## Commands
 
 Sync a pack into a target directory:
@@ -23,7 +27,7 @@ If the target directory does not exist yet, `sync` creates it after applying the
 Use `safe` mode explicitly:
 
 ```bash
-python3 scripts/agents_sync.py sync --pack a-team-plus --target ~/.config/opencode/agents --mode safe
+python3 scripts/agents_sync.py sync --pack a-team-gpt-5.4 --target ~/.config/opencode/agents --mode safe
 ```
 
 Use `yolo` mode only when you intentionally want to remove approval prompts for `ask` permissions in the installed target files:
@@ -56,12 +60,12 @@ Example session:
 ```text
 $ python3 scripts/agents_sync.py interactive
 Target directory: ~/.config/opencode/agents
-Current state: target=existing, manifest=present, managed=11, drifted=0, missing=0, pack=a-team, mode=safe
+Current state: target=existing, manifest=present, managed=11, drifted=0, missing=0, pack=a-team-gpt-5.4, mode=safe
 Action (sync/status/reset): sync
-Pack (a-team/a-team-plus): a-team-plus
+Pack (a-team/a-team-gpt-5.4/a-team-plus/a-team-plus-gpt-5.4): a-team-gpt-5.4
 Mode (safe/trusted/yolo) [safe]:
-Preview: action=sync, target=/home/alice/.config/opencode/agents, pack=a-team-plus, mode=safe, force=no
-Planned changes: write=6, update=5, keep=1
+Preview: action=sync, target=/home/alice/.config/opencode/agents, pack=a-team-gpt-5.4, mode=safe, force=no
+Planned changes: write=11
 Proceed? [y/N]: y
 ```
 
