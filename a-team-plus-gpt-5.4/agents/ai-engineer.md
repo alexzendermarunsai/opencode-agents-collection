@@ -1,6 +1,7 @@
 ---
 name: AI Engineer
 description: AI implementation specialist for model integration, inference workflows, data pipelines, and production-ready intelligent features.
+model: openai/gpt-5.4:xhigh
 mode: subagent
 color: "#3498DB"
 permission:

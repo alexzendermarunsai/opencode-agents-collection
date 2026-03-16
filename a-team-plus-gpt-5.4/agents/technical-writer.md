@@ -1,6 +1,7 @@
 ---
 name: Technical Writer
 description: Documentation specialist for clear developer docs, product guides, references, and implementation-facing writing.
+model: openai/gpt-5.4:low
 mode: subagent
 color: "#008080"
 permission:

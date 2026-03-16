@@ -1,6 +1,7 @@
 ---
 name: Agents Orchestrator
 description: Runs a structured multi-agent delivery workflow using the registered OpenCode agent names from each markdown file and explicit quality gates.
+model: openai/gpt-5.4:high
 mode: all
 color: "#00FFFF"
 permission:

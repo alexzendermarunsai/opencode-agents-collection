@@ -11,6 +11,7 @@ A GPT-5.4-optimized variant of `a-team` for planning, discovery, design, impleme
 - the specialist agent files match `a-team`
 - the main difference is the `agents-orchestrator` prompt, tuned for GPT-5.4 orchestration behavior
 - the README and pack framing position this as the `a-team` choice when GPT-5.4 is your primary model
+- these packs also encode per-agent GPT-5.4 reasoning-effort variants tuned by role
 
 If you want the same lean workflow without model-specific positioning, use `a-team`.
 

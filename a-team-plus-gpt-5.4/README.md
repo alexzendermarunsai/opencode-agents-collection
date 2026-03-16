@@ -11,6 +11,7 @@ A GPT-5.4-optimized variant of `a-team-plus` for planning, discovery, design, im
 - most specialist files match `a-team-plus`, but `ai-engineer` and `security-engineer` are also GPT-5.4-tuned in this pack
 - `agents-orchestrator` is tuned for GPT-5.4 orchestration behavior
 - the README and pack framing position this as the `a-team-plus` choice when GPT-5.4 is your primary model
+- these packs also encode per-agent GPT-5.4 reasoning-effort variants tuned by role
 
 If you want the same expanded shipping workflow without model-specific positioning, use `a-team-plus`.
 

@@ -1,6 +1,7 @@
 ---
 name: Performance Benchmarker
 description: Performance validation specialist for benchmarking, bottleneck analysis, load behavior, and scalability risk assessment.
+model: openai/gpt-5.4:high
 mode: subagent
 color: "#F39C12"
 permission:
