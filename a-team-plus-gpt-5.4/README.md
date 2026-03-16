@@ -4,12 +4,12 @@ A GPT-5.4-optimized variant of `a-team-plus` for planning, discovery, design, im
 
 ## What It Is
 
-`a-team-plus-gpt-5.4` keeps the same specialist agent roster as `a-team-plus`, but pairs it with a GPT-5.4-tuned orchestrator and GPT-5.4-focused pack guidance.
+`a-team-plus-gpt-5.4` keeps the same specialist agent roster as `a-team-plus`, but pairs it with a GPT-5.4-tuned orchestrator, GPT-5.4-focused pack guidance, and a small number of GPT-5.4-tuned high-judgment specialists.
 
 ## How It Differs From A-Team Plus
 
-- the specialist agent files match `a-team-plus`
-- the main difference is the `agents-orchestrator` prompt, tuned for GPT-5.4 orchestration behavior
+- most specialist files match `a-team-plus`, but `ai-engineer` and `security-engineer` are also GPT-5.4-tuned in this pack
+- `agents-orchestrator` is tuned for GPT-5.4 orchestration behavior
 - the README and pack framing position this as the `a-team-plus` choice when GPT-5.4 is your primary model
 
 If you want the same expanded shipping workflow without model-specific positioning, use `a-team-plus`.
@@ -20,7 +20,7 @@ Use `a-team-plus-gpt-5.4` when:
 
 - you want the broader `a-team-plus` workflow with deployment, performance, security, accessibility, AI, and prototyping coverage
 - GPT-5.4 is your primary model
-- the broader `a-team-plus` workflow fits, and model-specific orchestration is the main differentiator
+- the broader `a-team-plus` workflow fits, and you want GPT-5.4 tuning on the orchestrator plus a few high-judgment specialists
 
 Use `a-team-plus` when you want the same specialist coverage in the non-model-specific pack.
 
