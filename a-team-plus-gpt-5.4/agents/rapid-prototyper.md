@@ -1,7 +1,8 @@
 ---
 name: Rapid Prototyper
 description: Prototype and MVP specialist for quickly validating ideas with minimal but testable product slices.
-model: openai/gpt-5.4:low
+model: openai/gpt-5.4
+reasoningEffort: low
 mode: subagent
 color: "#2ECC71"
 permission:

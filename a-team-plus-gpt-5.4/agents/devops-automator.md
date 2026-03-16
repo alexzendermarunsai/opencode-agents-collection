@@ -1,7 +1,8 @@
 ---
 name: DevOps Automator
 description: Deployment and infrastructure specialist for CI/CD, environment automation, runtime reliability, and release operations.
-model: openai/gpt-5.4:medium
+model: openai/gpt-5.4
+reasoningEffort: medium
 mode: subagent
 color: "#F39C12"
 permission:

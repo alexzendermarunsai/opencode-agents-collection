@@ -1,7 +1,8 @@
 ---
 name: Senior Developer
 description: Senior implementation specialist for complex product work, full-stack delivery, and high-quality execution across modern web stacks.
-model: openai/gpt-5.4:high
+model: openai/gpt-5.4
+reasoningEffort: high
 mode: subagent
 color: "#2ECC71"
 permission:

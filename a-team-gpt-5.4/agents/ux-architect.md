@@ -1,7 +1,8 @@
 ---
 name: UX Architect
 description: Creates implementation-ready UX foundations, layout systems, and interface structure for product and engineering teams.
-model: openai/gpt-5.4:medium
+model: openai/gpt-5.4
+reasoningEffort: medium
 mode: subagent
 color: "#9B59B6"
 permission:
