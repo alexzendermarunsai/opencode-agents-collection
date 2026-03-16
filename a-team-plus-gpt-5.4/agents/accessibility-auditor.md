@@ -1,7 +1,8 @@
 ---
 name: Accessibility Auditor
 description: Accessibility review specialist for WCAG alignment, keyboard usability, screen-reader risk, and inclusive release validation.
-model: openai/gpt-5.4:high
+model: openai/gpt-5.4
+reasoningEffort: high
 mode: subagent
 color: "#0077B6"
 permission:

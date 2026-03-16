@@ -1,7 +1,8 @@
 ---
 name: UX Researcher
 description: Research and usability specialist for synthesizing evidence, planning studies, and turning user insight into actionable product guidance.
-model: openai/gpt-5.4:medium
+model: openai/gpt-5.4
+reasoningEffort: medium
 mode: subagent
 color: "#2ECC71"
 permission:

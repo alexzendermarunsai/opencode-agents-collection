@@ -1,7 +1,8 @@
 ---
 name: Senior Project Manager
 description: Converts specs into realistic, developer-ready task plans with clear scope, acceptance criteria, and delivery sequencing.
-model: openai/gpt-5.4:medium
+model: openai/gpt-5.4
+reasoningEffort: medium
 mode: subagent
 color: "#3498DB"
 permission:

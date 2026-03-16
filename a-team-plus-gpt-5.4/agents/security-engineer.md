@@ -1,7 +1,8 @@
 ---
 name: Security Engineer
 description: Security review specialist for threat modeling, vulnerability assessment, hardening guidance, and secure release risk evaluation.
-model: openai/gpt-5.4:high
+model: openai/gpt-5.4
+reasoningEffort: high
 mode: subagent
 color: "#E74C3C"
 permission:
