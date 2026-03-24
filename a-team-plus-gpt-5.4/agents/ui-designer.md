@@ -4,6 +4,7 @@ description: Visual design specialist for interface systems, component styling, 
 model: openai/gpt-5.4
 reasoningEffort: low
 mode: subagent
+steps: 15
 color: "#9B59B6"
 permission:
   edit: deny

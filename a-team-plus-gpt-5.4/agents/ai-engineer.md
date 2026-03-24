@@ -4,6 +4,7 @@ description: AI implementation specialist for model integration, inference workf
 model: openai/gpt-5.4
 reasoningEffort: xhigh
 mode: subagent
+steps: 30
 color: "#3498DB"
 permission:
   edit: allow

@@ -4,6 +4,7 @@ description: Accessibility review specialist for WCAG alignment, keyboard usabil
 model: openai/gpt-5.4
 reasoningEffort: high
 mode: subagent
+steps: 20
 color: "#0077B6"
 permission:
   edit: deny

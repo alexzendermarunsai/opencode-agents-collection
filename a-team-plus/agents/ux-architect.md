@@ -2,6 +2,7 @@
 name: UX Architect
 description: Creates implementation-ready UX foundations, layout systems, and interface structure for product and engineering teams.
 mode: subagent
+steps: 20
 color: "#9B59B6"
 permission:
   edit: deny

@@ -4,6 +4,7 @@ description: Creates implementation-ready UX foundations, layout systems, and in
 model: openai/gpt-5.4
 reasoningEffort: medium
 mode: subagent
+steps: 20
 color: "#9B59B6"
 permission:
   edit: deny

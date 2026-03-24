@@ -2,6 +2,7 @@
 name: Accessibility Auditor
 description: Accessibility review specialist for WCAG alignment, keyboard usability, screen-reader risk, and inclusive release validation.
 mode: subagent
+steps: 20
 color: "#0077B6"
 permission:
   edit: deny

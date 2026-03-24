@@ -4,6 +4,7 @@ description: Security review specialist for threat modeling, vulnerability asses
 model: openai/gpt-5.4
 reasoningEffort: high
 mode: subagent
+steps: 25
 color: "#E74C3C"
 permission:
   edit: deny

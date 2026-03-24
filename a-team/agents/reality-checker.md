@@ -2,6 +2,7 @@
 name: Reality Checker
 description: Final validator that defaults to skepticism, requires evidence, and blocks weak or fantasy approvals.
 mode: subagent
+steps: 30
 color: "#E74C3C"
 permission:
   edit: deny

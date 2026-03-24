@@ -4,6 +4,7 @@ description: API validation specialist focused on functional correctness, integr
 model: openai/gpt-5.4
 reasoningEffort: medium
 mode: subagent
+steps: 25
 color: "#9B59B6"
 permission:
   edit: deny

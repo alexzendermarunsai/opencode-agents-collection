@@ -2,6 +2,7 @@
 name: DevOps Automator
 description: Deployment and infrastructure specialist for CI/CD, environment automation, runtime reliability, and release operations.
 mode: subagent
+steps: 30
 color: "#F39C12"
 permission:
   edit: allow

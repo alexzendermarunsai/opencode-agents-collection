@@ -4,6 +4,7 @@ description: Runs a structured multi-agent delivery workflow using the registere
 model: openai/gpt-5.4
 reasoningEffort: high
 mode: all
+steps: 40
 color: "#00FFFF"
 permission:
   edit: deny

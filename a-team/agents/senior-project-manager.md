@@ -2,6 +2,7 @@
 name: Senior Project Manager
 description: Converts specs into realistic, developer-ready task plans with clear scope, acceptance criteria, and delivery sequencing.
 mode: subagent
+steps: 20
 color: "#3498DB"
 permission:
   edit: deny
