@@ -4,6 +4,7 @@ description: Research and usability specialist for synthesizing evidence, planni
 model: openai/gpt-5.4
 reasoningEffort: medium
 mode: subagent
+steps: 20
 color: "#2ECC71"
 permission:
   edit: deny

@@ -2,6 +2,7 @@
 name: Performance Benchmarker
 description: Performance validation specialist for benchmarking, bottleneck analysis, load behavior, and scalability risk assessment.
 mode: subagent
+steps: 25
 color: "#F39C12"
 permission:
   edit: deny

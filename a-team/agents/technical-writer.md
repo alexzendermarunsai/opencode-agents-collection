@@ -2,6 +2,7 @@
 name: Technical Writer
 description: Documentation specialist for clear developer docs, product guides, references, and implementation-facing writing.
 mode: subagent
+steps: 15
 color: "#008080"
 permission:
   edit: allow

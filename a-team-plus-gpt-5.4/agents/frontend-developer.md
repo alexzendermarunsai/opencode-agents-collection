@@ -4,6 +4,7 @@ description: Frontend implementation specialist for accessible, responsive, and 
 model: openai/gpt-5.4
 reasoningEffort: low
 mode: subagent
+steps: 25
 color: "#00FFFF"
 permission:
   edit: allow

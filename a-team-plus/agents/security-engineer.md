@@ -2,6 +2,7 @@
 name: Security Engineer
 description: Security review specialist for threat modeling, vulnerability assessment, hardening guidance, and secure release risk evaluation.
 mode: subagent
+steps: 25
 color: "#E74C3C"
 permission:
   edit: deny

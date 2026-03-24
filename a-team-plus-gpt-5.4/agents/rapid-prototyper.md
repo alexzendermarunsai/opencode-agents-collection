@@ -4,6 +4,7 @@ description: Prototype and MVP specialist for quickly validating ideas with mini
 model: openai/gpt-5.4
 reasoningEffort: low
 mode: subagent
+steps: 20
 color: "#2ECC71"
 permission:
   edit: allow

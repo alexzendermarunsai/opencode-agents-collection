@@ -2,6 +2,7 @@
 name: Rapid Prototyper
 description: Prototype and MVP specialist for quickly validating ideas with minimal but testable product slices.
 mode: subagent
+steps: 20
 color: "#2ECC71"
 permission:
   edit: allow

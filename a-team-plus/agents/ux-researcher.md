@@ -2,6 +2,7 @@
 name: UX Researcher
 description: Research and usability specialist for synthesizing evidence, planning studies, and turning user insight into actionable product guidance.
 mode: subagent
+steps: 20
 color: "#2ECC71"
 permission:
   edit: deny

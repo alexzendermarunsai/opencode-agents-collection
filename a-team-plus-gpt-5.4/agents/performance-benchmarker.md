@@ -4,6 +4,7 @@ description: Performance validation specialist for benchmarking, bottleneck anal
 model: openai/gpt-5.4
 reasoningEffort: high
 mode: subagent
+steps: 25
 color: "#F39C12"
 permission:
   edit: deny

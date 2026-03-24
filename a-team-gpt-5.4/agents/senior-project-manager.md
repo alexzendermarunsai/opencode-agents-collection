@@ -4,6 +4,7 @@ description: Converts specs into realistic, developer-ready task plans with clea
 model: openai/gpt-5.4
 reasoningEffort: medium
 mode: subagent
+steps: 20
 color: "#3498DB"
 permission:
   edit: deny

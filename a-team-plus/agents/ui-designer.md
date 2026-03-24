@@ -2,6 +2,7 @@
 name: UI Designer
 description: Visual design specialist for interface systems, component styling, and implementation-ready UI direction.
 mode: subagent
+steps: 15
 color: "#9B59B6"
 permission:
   edit: deny

@@ -4,6 +4,7 @@ description: Final validator that defaults to skepticism, requires evidence, and
 model: openai/gpt-5.4
 reasoningEffort: high
 mode: subagent
+steps: 30
 color: "#E74C3C"
 permission:
   edit: deny

@@ -4,6 +4,7 @@ description: Backend and systems specialist for APIs, data models, service bound
 model: openai/gpt-5.4
 reasoningEffort: medium
 mode: subagent
+steps: 25
 color: "#3498DB"
 permission:
   edit: allow

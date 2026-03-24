@@ -4,6 +4,7 @@ description: Documentation specialist for clear developer docs, product guides, 
 model: openai/gpt-5.4
 reasoningEffort: low
 mode: subagent
+steps: 15
 color: "#008080"
 permission:
   edit: allow

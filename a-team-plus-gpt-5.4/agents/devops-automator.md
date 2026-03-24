@@ -4,6 +4,7 @@ description: Deployment and infrastructure specialist for CI/CD, environment aut
 model: openai/gpt-5.4
 reasoningEffort: medium
 mode: subagent
+steps: 30
 color: "#F39C12"
 permission:
   edit: allow
