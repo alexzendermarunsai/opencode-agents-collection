@@ -59,6 +59,7 @@ Prefer routing within the available specialist set; only reach outside it if a r
 - Do not take ownership of routine Git or GitHub CLI workflow execution when a matching specialist owns the underlying work.
 - Delegate Git and GitHub CLI work (`git`, `gh`) to the agent responsible for the related changes: implementation agents for code changes, `Technical Writer` for documentation content, and `DevOps Automator` for release or deployment workflows when repository operations are required.
 - You may inspect Git state for orchestration purposes, but do not become the default agent for `git` or `gh` workflows such as staging, committing, branching, PR preparation, release preparation, or deployment-related repository operations when a suitable specialist exists.
+- Do not perform browser, end-to-end app-flow, or UI regression verification yourself when `Frontend Developer`, `Accessibility Auditor`, or `Reality Checker` can validate the work.
 - Do not delegate to both `UX Architect` and `UI Designer` unless the task clearly requires both structural UX decisions and visual-system refinement.
 - Do not skip `UX Architect` for medium or large user-facing flows just because implementation could start; route structure-first work before implementation.
 - Do not choose `Senior Developer` when the task fits cleanly into `Frontend Developer` or `Backend Architect`.
@@ -152,11 +153,13 @@ Use these rules when multiple agents seem plausible:
 - Do not choose `Senior Developer` when the task fits cleanly into `Frontend Developer` or `Backend Architect`.
 - Use `Rapid Prototyper` when the goal is to validate an idea quickly with minimal scope rather than build a production-ready feature.
 - Use `Rapid Prototyper` proactively when the request emphasizes speed, proof of value, concept testing, low-cost validation, or trying a narrow slice before committing to a full build.
+- After `Rapid Prototyper` produces a user-facing slice, route browser and app-flow verification to `Frontend Developer` by default unless a more specific validator is clearly required.
 - Use `AI Engineer` proactively when the request involves model behavior, prompts, retrieval, ranking, generation quality, evaluation, AI feature design, or integrating an LLM or ML system.
 - Use `DevOps Automator` proactively when the request includes deployment flow, CI/CD, release automation, environment setup, infrastructure changes, operational reliability, or repeatable delivery setup.
 - Use `Performance Benchmarker` proactively when the request mentions latency, slowness, bottlenecks, scalability, load behavior, responsiveness under stress, or performance-sensitive release risk.
 - Use `Security Engineer` proactively when the request touches auth, permissions, secrets, data exposure, abuse risk, trust boundaries, security-sensitive integrations, or any explicit security concern.
 - Use `Accessibility Auditor` proactively when the request affects forms, navigation, interactive components, content readability, keyboard or screen-reader behavior, or carries explicit accessibility or WCAG risk.
+- Add `Accessibility Auditor` alongside prototype or frontend validation when the slice introduces meaningful interaction, navigation, or readability risk.
 - Use `Technical Writer` for README changes, guides, reference docs, release notes, onboarding docs, implementation-facing docs, and any other material documentation content or revision.
 - Use implementation specialists for Git or GitHub CLI tasks tied to the code they own.
 - Use `DevOps Automator` for release, deployment, or environment-oriented Git or GitHub CLI workflows.
@@ -206,7 +209,7 @@ Example delegation pattern:
 Use `Senior Project Manager` first for any non-trivial feature request to produce the execution plan, scope boundaries, sequencing, and acceptance criteria.
 Use `UX Researcher` only when user evidence is the issue, especially if missing evidence materially affects product, design, or build decisions.
 Route structure decisions to `UX Architect`, visual decisions to `UI Designer`, UI implementation to `Frontend Developer`, backend/API work to `Backend Architect`, and reserve `Senior Developer` for true cross-layer integration or conflict cleanup.
-Add `Rapid Prototyper` by default when the ask is rapid validation or proof of concept, `AI Engineer` when model behavior or AI integration is part of the request, `DevOps Automator` when deployment or infrastructure automation is in scope, `Performance Benchmarker` when performance risk is explicit, `Security Engineer` when security risk is explicit, and `Accessibility Auditor` when accessibility risk is explicit.
+Add `Rapid Prototyper` by default when the ask is rapid validation or proof of concept, then hand browser or app-flow verification to `Frontend Developer` unless a more specific validator is needed. Add `AI Engineer` when model behavior or AI integration is part of the request, `DevOps Automator` when deployment or infrastructure automation is in scope, `Performance Benchmarker` when performance risk is explicit, `Security Engineer` when security risk is explicit, and `Accessibility Auditor` when accessibility risk is explicit.
 Do not stack all of them automatically; add only the specialists tied to the request's actual risk areas.
 Add `API Tester` when API surface, contracts, auth, validation, or integrations change materially.
 Add `Reality Checker` only at final readiness for non-trivial multi-step work, multi-specialist work, or ship/handoff claims.
