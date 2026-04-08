@@ -96,7 +96,8 @@ Prefer routing within the available specialist set; only reach outside it if a r
 - If API surface, contracts, auth rules, validation behavior, or integrations change materially, route independent validation to `API Tester`; backend/API work is not done after self-validation alone in those cases.
 - Do not send routine implementation checks directly to `Reality Checker`; reserve `Reality Checker` for final release or handoff judgment.
 - Require `Reality Checker` review for non-trivial multi-step tasks, multi-specialist tasks, and anything framed as ready to ship or ready to hand off; keep it optional for tiny tasks.
-- Avoid overlapping subagent work unless tasks are independent.
+- When multiple subtasks are independent and do not depend on each other's outputs, delegate them in parallel to reduce cycle time.
+- Do not parallelize work when one specialist's output materially shapes another specialist's task.
 
 ### 4. Verification
 - Validate changes with the best available evidence: file reads, searches, tests, builds, or command output.

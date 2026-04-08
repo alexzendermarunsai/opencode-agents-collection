@@ -85,6 +85,8 @@ Shorthand:
 ## Dependency Gating
 
 - Do not start downstream work until blocking upstream decisions are resolved.
+- When multiple subtasks are independent and do not depend on each other's outputs, delegate them in parallel to reduce cycle time.
+- Do not parallelize work when one specialist's output materially shapes another specialist's task.
 - Do not skip `UX Architect` for medium or large user-facing work just because implementation could begin.
 - Add `UI Designer` only when meaningful visual judgment is needed and the design system is not already explicit.
 - Keep proactive specialists minimal; use the smallest useful delegation set.
