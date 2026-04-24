@@ -15,7 +15,14 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_NAME = ".opencode-agents-state.json"
-SUPPORTED_PACKS = ("a-team", "a-team-gpt-5.4", "a-team-plus", "a-team-plus-gpt-5.4")
+SUPPORTED_PACKS = (
+    "a-team",
+    "a-team-gpt-5.4",
+    "a-team-gpt-5.5",
+    "a-team-plus",
+    "a-team-plus-gpt-5.4",
+    "a-team-plus-gpt-5.5",
+)
 SUPPORTED_MODES = ("safe", "trusted", "yolo")
 
 
@@ -168,9 +175,9 @@ def safe_permission_matrix(pack: str, agent_names: list[str]) -> dict[str, dict[
         "Senior Developer": {"edit": "allow", "bash": "deny", "webfetch": "deny"},
         "Technical Writer": {"edit": "allow", "bash": "deny", "webfetch": "ask"},
     }
-    if pack in {"a-team", "a-team-gpt-5.4"}:
+    if pack in {"a-team", "a-team-gpt-5.4", "a-team-gpt-5.5"}:
         return common
-    if pack in {"a-team-plus", "a-team-plus-gpt-5.4"}:
+    if pack in {"a-team-plus", "a-team-plus-gpt-5.4", "a-team-plus-gpt-5.5"}:
         common.update(
             {
                 "Performance Benchmarker": {"edit": "deny", "bash": "deny", "webfetch": "deny"},

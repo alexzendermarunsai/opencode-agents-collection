@@ -90,6 +90,28 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertEqual(manifest["pack"], "a-team-plus-gpt-5.4")
             self.assertEqual(manifest["mode"], "safe")
 
+    def test_sync_safe_supports_a_team_plus_gpt_5_5_with_plus_permissions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+
+            result = self.run_cli("sync", "--pack", "a-team-plus-gpt-5.5", "--target", str(target), "--mode", "safe")
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+            orchestrator = (target / "agents-orchestrator.md").read_text(encoding="utf-8")
+            self.assertIn('    "AI Engineer": allow\n', orchestrator)
+            self.assertIn('    "Rapid Prototyper": allow\n', orchestrator)
+            self.assertIn('    "*": deny\n', orchestrator)
+
+            devops = (target / "devops-automator.md").read_text(encoding="utf-8")
+            self.assertIn("  edit: deny\n", devops)
+            self.assertIn("  bash: deny\n", devops)
+            self.assertIn("  webfetch: deny\n", devops)
+
+            manifest = json.loads((target / ".opencode-agents-state.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["pack"], "a-team-plus-gpt-5.5")
+            self.assertEqual(manifest["mode"], "safe")
+
     def test_sync_safe_supports_a_team_gpt_5_4_with_a_team_permissions(self):
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "agents"
@@ -114,6 +136,31 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertEqual(manifest["pack"], "a-team-gpt-5.4")
             self.assertEqual(manifest["mode"], "safe")
             self.assertEqual(manifest["files"]["agents-orchestrator.md"]["source"], "a-team-gpt-5.4/agents/agents-orchestrator.md")
+
+    def test_sync_safe_supports_a_team_gpt_5_5_with_a_team_permissions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+
+            result = self.run_cli("sync", "--pack", "a-team-gpt-5.5", "--target", str(target), "--mode", "safe")
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+            orchestrator = (target / "agents-orchestrator.md").read_text(encoding="utf-8")
+            self.assertIn('    "Senior Project Manager": allow\n', orchestrator)
+            self.assertIn('    "Technical Writer": allow\n', orchestrator)
+            self.assertIn('    "*": deny\n', orchestrator)
+            self.assertNotIn('    "AI Engineer": allow\n', orchestrator)
+            self.assertNotIn('    "DevOps Automator": allow\n', orchestrator)
+
+            frontend = (target / "frontend-developer.md").read_text(encoding="utf-8")
+            self.assertIn("  edit: allow\n", frontend)
+            self.assertIn("  bash: deny\n", frontend)
+            self.assertIn("  webfetch: deny\n", frontend)
+
+            manifest = json.loads((target / ".opencode-agents-state.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["pack"], "a-team-gpt-5.5")
+            self.assertEqual(manifest["mode"], "safe")
+            self.assertEqual(manifest["files"]["agents-orchestrator.md"]["source"], "a-team-gpt-5.5/agents/agents-orchestrator.md")
 
     def test_sync_yolo_rewrites_ask_to_allow_and_records_mode(self):
         with tempfile.TemporaryDirectory() as tmp:

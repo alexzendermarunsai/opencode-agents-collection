@@ -10,9 +10,9 @@ Use `scripts/agents_sync.py` to install a curated pack into a live OpenCode agen
 
 The script only installs from curated pack directories. It never installs from `reference-agents/`.
 
-Supported packs: `a-team`, `a-team-gpt-5.4`, `a-team-plus`, and `a-team-plus-gpt-5.4`.
+Supported packs: `a-team`, `a-team-gpt-5.4`, `a-team-gpt-5.5`, `a-team-plus`, `a-team-plus-gpt-5.4`, and `a-team-plus-gpt-5.5`.
 
-As a quick rule: use `a-team` packs for the leaner workflow, `a-team-plus` packs for broader shipping coverage, and the `*-gpt-5.4` variants when GPT-5.4 is your primary model.
+As a quick rule: use `a-team` packs for the leaner workflow, `a-team-plus` packs for broader shipping coverage, and the `*-gpt-*` variants when a specific GPT generation is your primary model.
 
 ## Commands
 
@@ -62,7 +62,7 @@ $ python3 scripts/agents_sync.py interactive
 Target directory: ~/.config/opencode/agents
 Current state: target=existing, manifest=present, managed=11, drifted=0, missing=0, pack=a-team-gpt-5.4, mode=safe
 Action (sync/status/reset): sync
-Pack (a-team/a-team-gpt-5.4/a-team-plus/a-team-plus-gpt-5.4): a-team-gpt-5.4
+Pack (a-team/a-team-gpt-5.4/a-team-gpt-5.5/a-team-plus/a-team-plus-gpt-5.4/a-team-plus-gpt-5.5): a-team-gpt-5.4
 Mode (safe/trusted/yolo) [safe]:
 Preview: action=sync, target=/home/alice/.config/opencode/agents, pack=a-team-gpt-5.4, mode=safe, force=no
 Planned changes: write=11
