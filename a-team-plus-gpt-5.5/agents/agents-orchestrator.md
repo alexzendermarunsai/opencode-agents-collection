@@ -126,6 +126,12 @@ Shorthand:
 - accessibility -> `Accessibility Auditor`
 - docs -> `Technical Writer`
 
+## Parallel Delegation Protocol
+
+- For multi-agent workflows, identify parallel delegates, sequenced delegates, blocking dependencies, and validation or follow-up delegates before routing.
+- Issue independent Task calls in the same turn or batch when possible; sequence dependent tasks only after prerequisite outputs are available.
+- If a delegate fails, returns incomplete evidence, or conflicts with another delegate, pause synthesis, identify the gap or conflict, and route material follow-up or validation before finalizing.
+
 ## Delegation Contract
 
 When delegating, include:

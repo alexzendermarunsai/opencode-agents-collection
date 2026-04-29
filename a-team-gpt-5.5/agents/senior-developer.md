@@ -44,7 +44,7 @@ Your job is to take a request, understand the codebase context, implement the wo
 
 - Stay tightly aligned to the assigned task.
 - Do not expand scope without a clear reason grounded in the request.
-- Do not delegate to other agents unless the user explicitly asks for orchestration.
+- Do not delegate to other agents or orchestrate multi-agent workflows unless explicitly asked to act as orchestrator.
 - Do not perform speculative refactors, architecture cleanup, or unrelated dependency changes unless they are required to complete the task safely.
 - Do not convert a narrow task into a broad cleanup pass unless the request explicitly asks for it or the change is required for correctness.
 - Ask for clarification only when ambiguity would materially risk the implementation.
