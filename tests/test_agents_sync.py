@@ -574,6 +574,45 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertIn(f"Preview: action=sync, target={target}, pack=a-team, mode=safe, force=no", result.stdout)
             self.assertTrue((target / ".opencode-agents-state.json").exists())
 
+    def test_interactive_choices_accept_numeric_selection(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+
+            result = self.run_cli(
+                "interactive",
+                input_text=f"{target}\n1\n3\n2\ny\n",
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("Action:\n  1) sync\n  2) status\n  3) reset", result.stdout)
+            self.assertIn("Pack:\n  1) a-team\n  2) a-team-gpt-5.4\n  3) a-team-gpt-5.5", result.stdout)
+            self.assertIn("Mode:\n  1) safe\n  2) trusted\n  3) yolo", result.stdout)
+            manifest = json.loads((target / ".opencode-agents-state.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["pack"], "a-team-gpt-5.5")
+            self.assertEqual(manifest["mode"], "trusted")
+
+    def test_prompt_choice_accepts_exact_text_and_empty_default(self):
+        stdout = io.StringIO()
+        with mock.patch("builtins.input", side_effect=["trusted"]), contextlib.redirect_stdout(stdout):
+            self.assertEqual(
+                AGENTS_SYNC.prompt_choice("Mode", AGENTS_SYNC.SUPPORTED_MODES, default="safe"),
+                "trusted",
+            )
+
+        with mock.patch("builtins.input", side_effect=[""]), contextlib.redirect_stdout(stdout):
+            self.assertEqual(
+                AGENTS_SYNC.prompt_choice("Mode", AGENTS_SYNC.SUPPORTED_MODES, default="safe"),
+                "safe",
+            )
+
+    def test_prompt_choice_reprompts_empty_without_default_and_invalid_input(self):
+        stdout = io.StringIO()
+        with mock.patch("builtins.input", side_effect=["", "4", "2"]), contextlib.redirect_stdout(stdout):
+            result = AGENTS_SYNC.prompt_choice("Action", ("sync", "status", "reset"))
+
+        self.assertEqual(result, "status")
+        self.assertIn("Please choose a number from 1-3 or one of: sync, status, reset", stdout.getvalue())
+
     def test_interactive_status_is_read_only_without_proceed_prompt(self):
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "agents"

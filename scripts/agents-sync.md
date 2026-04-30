@@ -61,9 +61,24 @@ Example session:
 $ python3 scripts/agents_sync.py interactive
 Target directory: ~/.config/opencode/agents
 Current state: target=existing, manifest=present, managed=11, drifted=0, missing=0, pack=a-team-gpt-5.4, mode=safe
-Action (sync/status/reset): sync
-Pack (a-team/a-team-gpt-5.4/a-team-gpt-5.5/a-team-plus/a-team-plus-gpt-5.4/a-team-plus-gpt-5.5): a-team-gpt-5.4
-Mode (safe/trusted/yolo) [safe]:
+Action:
+  1) sync
+  2) status
+  3) reset
+Choose action: 1
+Pack:
+  1) a-team
+  2) a-team-gpt-5.4
+  3) a-team-gpt-5.5
+  4) a-team-plus
+  5) a-team-plus-gpt-5.4
+  6) a-team-plus-gpt-5.5
+Choose pack [2]:
+Mode:
+  1) safe
+  2) trusted
+  3) yolo
+Choose mode [1]:
 Preview: action=sync, target=/home/alice/.config/opencode/agents, pack=a-team-gpt-5.4, mode=safe, force=no
 Planned changes: write=1, keep=11
 Proceed? [y/N]: y

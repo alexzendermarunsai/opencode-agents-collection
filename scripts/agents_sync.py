@@ -635,11 +635,22 @@ def prompt(message: str, default: str | None = None) -> str:
 
 
 def prompt_choice(message: str, choices: tuple[str, ...], default: str | None = None) -> str:
+    default_index = choices.index(default) + 1 if default in choices else None
     while True:
-        value = prompt(f"{message} ({'/'.join(choices)})", default)
+        print(f"{message}:")
+        for index, choice in enumerate(choices, start=1):
+            print(f"  {index}) {choice}")
+        suffix = f" [{default_index}]" if default_index is not None else ""
+        value = input(f"Choose {message.lower()}{suffix}: ").strip()
+        if not value and default_index is not None:
+            return default
+        if value.isdecimal():
+            choice_index = int(value)
+            if 1 <= choice_index <= len(choices):
+                return choices[choice_index - 1]
         if value in choices:
             return value
-        print(f"Please choose one of: {', '.join(choices)}")
+        print(f"Please choose a number from 1-{len(choices)} or one of: {', '.join(choices)}")
 
 
 def prompt_yes_no(message: str, default: bool = False) -> bool:
