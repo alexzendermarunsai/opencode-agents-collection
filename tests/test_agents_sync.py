@@ -1,13 +1,30 @@
+import contextlib
+import importlib.util
+import io
 import json
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "scripts" / "agents_sync.py"
+
+
+def load_agents_sync_module():
+    spec = importlib.util.spec_from_file_location("agents_sync_under_test", SCRIPT)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("unable to load agents_sync.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+AGENTS_SYNC = load_agents_sync_module()
 
 
 class AgentsSyncTests(unittest.TestCase):
@@ -20,6 +37,19 @@ class AgentsSyncTests(unittest.TestCase):
             capture_output=True,
             check=False,
         )
+
+    def run_main(self, *args):
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = AGENTS_SYNC.main(list(args))
+        return code, stdout.getvalue(), stderr.getvalue()
+
+    def assert_friendly_probe_error(self, stderr, expected):
+        self.assertIn("error:", stderr)
+        self.assertIn(expected, stderr)
+        self.assertIn("Permission denied", stderr)
+        self.assertNotIn("Traceback", stderr)
 
     def test_sync_safe_rewrites_permissions_and_writes_manifest(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -227,8 +257,23 @@ class AgentsSyncTests(unittest.TestCase):
                 "--dry-run",
             )
             self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("DRY RUN: no files will be changed", result.stdout)
+            self.assertIn(f"Context: action=sync, target={target}, pack=a-team, mode=yolo, force=no", result.stdout)
+            self.assertIn("Planned changes:", result.stdout)
+            self.assertIn("Detailed actions:", result.stdout)
             self.assertNotIn("Type YOLO to continue:", result.stdout)
             self.assertFalse((target / ".opencode-agents-state.json").exists())
+
+    def test_sync_rejects_target_file_directory_with_friendly_error_even_with_force(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+            (target / "frontend-developer.md").mkdir()
+
+            result = self.run_cli("sync", "--pack", "a-team", "--target", str(target), "--force")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("target file must be a regular file", result.stderr)
+            self.assertNotIn("Traceback", result.stderr)
 
     def test_sync_detects_drift_without_force(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -274,6 +319,20 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertFalse((target / "frontend-developer.md").exists())
             self.assertFalse((target / ".opencode-agents-state.json").exists())
 
+    def test_reset_dry_run_without_manifest_prints_noop_preview(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+
+            result = self.run_cli("reset", "--target", str(target), "--dry-run")
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("DRY RUN: no files will be changed", result.stdout)
+            self.assertIn(f"Context: action=reset, target={target}, force=no", result.stdout)
+            self.assertIn("Planned changes: no changes", result.stdout)
+            self.assertIn("Detailed actions:", result.stdout)
+            self.assertNotIn("nothing to reset", result.stdout)
+
     def test_status_rejects_manifest_parent_traversal_entry(self):
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "agents"
@@ -299,6 +358,91 @@ class AgentsSyncTests(unittest.TestCase):
             result = self.run_cli("status", "--target", str(target))
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("unsafe managed filename", result.stderr)
+
+    def test_status_missing_safe_target_reports_empty_state(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "missing" / "agents"
+
+            result = self.run_cli("status", "--target", str(target))
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("target state: missing", result.stdout)
+            self.assertIn("manifest: missing", result.stdout)
+            self.assertIn("managed files: 0", result.stdout)
+            self.assertFalse(target.exists())
+
+    def test_status_json_missing_safe_target_reports_empty_state(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "missing" / "agents"
+
+            result = self.run_cli("status", "--target", str(target), "--json")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload["target"], str(target))
+            self.assertFalse(payload["target_exists"])
+            self.assertFalse(payload["manifest"])
+            self.assertEqual(payload["managed_files"], 0)
+            self.assertEqual(payload["drifted_files"], [])
+            self.assertEqual(payload["missing_files"], [])
+            self.assertFalse(target.exists())
+
+    def test_status_rejects_manifest_directory_with_friendly_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+            (target / ".opencode-agents-state.json").mkdir()
+
+            result = self.run_cli("status", "--target", str(target))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("manifest path must be a regular file", result.stderr)
+            self.assertNotIn("Traceback", result.stderr)
+
+    def test_status_rejects_invalid_utf8_manifest_with_friendly_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+            (target / ".opencode-agents-state.json").write_bytes(b"\xff")
+
+            result = self.run_cli("status", "--target", str(target))
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("manifest path is not valid UTF-8", result.stderr)
+            self.assertNotIn("Traceback", result.stderr)
+
+    def test_status_handles_is_symlink_probe_failure_with_friendly_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+
+            with mock.patch.object(type(target), "is_symlink", side_effect=PermissionError(13, "Permission denied")):
+                code, stdout, stderr = self.run_main("status", "--target", str(target))
+
+            self.assertEqual(code, 1)
+            self.assertEqual(stdout, "")
+            self.assert_friendly_probe_error(stderr, "unable to inspect target directory")
+
+    def test_status_handles_is_dir_probe_failure_with_friendly_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+
+            with mock.patch.object(type(target), "is_dir", side_effect=PermissionError(13, "Permission denied")):
+                code, stdout, stderr = self.run_main("status", "--target", str(target))
+
+            self.assertEqual(code, 1)
+            self.assertEqual(stdout, "")
+            self.assert_friendly_probe_error(stderr, "unable to inspect target directory")
+
+    def test_status_handles_is_file_probe_failure_with_friendly_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+            (target / ".opencode-agents-state.json").write_text("{}", encoding="utf-8")
+
+            with mock.patch.object(type(target), "is_file", side_effect=PermissionError(13, "Permission denied")):
+                code, stdout, stderr = self.run_main("status", "--target", str(target))
+
+            self.assertEqual(code, 1)
+            self.assertEqual(stdout, "")
+            self.assert_friendly_probe_error(stderr, "unable to inspect manifest path")
 
     def test_reset_rejects_manifest_parent_traversal_entry(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -429,6 +573,39 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertIn("Current state: target=missing, manifest=missing", result.stdout)
             self.assertIn(f"Preview: action=sync, target={target}, pack=a-team, mode=safe, force=no", result.stdout)
             self.assertTrue((target / ".opencode-agents-state.json").exists())
+
+    def test_interactive_status_is_read_only_without_proceed_prompt(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+
+            result = self.run_cli(
+                "interactive",
+                input_text=f"{target}\nstatus\n",
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("target state: missing", result.stdout)
+            self.assertIn("manifest: missing", result.stdout)
+            self.assertNotIn("Proceed?", result.stdout)
+            self.assertFalse(target.exists())
+
+    def test_interactive_sync_defaults_to_manifest_pack_and_mode(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+            initial = self.run_cli("sync", "--pack", "a-team-plus", "--target", str(target), "--mode", "trusted")
+            self.assertEqual(initial.returncode, 0, initial.stderr)
+
+            result = self.run_cli(
+                "interactive",
+                input_text=f"{target}\nsync\n\n\ny\n",
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn(f"Preview: action=sync, target={target}, pack=a-team-plus, mode=trusted, force=no", result.stdout)
+            manifest = json.loads((target / ".opencode-agents-state.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["pack"], "a-team-plus")
+            self.assertEqual(manifest["mode"], "trusted")
 
     def test_interactive_sync_prompts_before_force(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -65,7 +65,7 @@ Action (sync/status/reset): sync
 Pack (a-team/a-team-gpt-5.4/a-team-gpt-5.5/a-team-plus/a-team-plus-gpt-5.4/a-team-plus-gpt-5.5): a-team-gpt-5.4
 Mode (safe/trusted/yolo) [safe]:
 Preview: action=sync, target=/home/alice/.config/opencode/agents, pack=a-team-gpt-5.4, mode=safe, force=no
-Planned changes: write=11
+Planned changes: write=1, keep=11
 Proceed? [y/N]: y
 ```
 
@@ -82,7 +82,7 @@ python3 scripts/agents_sync.py reset --target ~/.config/opencode/agents --dry-ru
 - `trusted` installs the curated pack exactly as authored in this repo, including the pack's current `permission` blocks
 - `yolo` installs the curated pack like `trusted`, then rewrites only literal `ask` values inside the frontmatter `permission` block to `allow`; it does not change `deny`, and it does not change anything outside that block
 
-Interactive mode defaults to `safe`, never defaults to `trusted` or `yolo`, asks before enabling `force` when drift or unmanaged conflicts require it, and requires the same typed `YOLO` confirmation before executing a `yolo` sync.
+Interactive mode uses the current manifest's pack and mode as sync defaults when they are available, falls back to `safe` mode for new targets, asks before enabling `force` when drift or unmanaged conflicts require it, and requires the same typed `YOLO` confirmation before executing a `yolo` sync.
 
 Use `safe` when the target directory is a general-purpose live setup and you want a conservative default. Use `trusted` when you want the pack behavior in the target to match the curated source files exactly. Use `yolo` only in an isolated, disposable, or well-backed-up target directory.
 
@@ -115,4 +115,10 @@ That includes cases like:
 
 Use `--dry-run` to inspect planned writes, updates, removals, and keeps before making changes. Use `--force` only when you intentionally want to overwrite or clean up target-directory conflicts.
 
-The interactive wrapper does not bypass those checks; it surfaces the same force-required conditions and asks for explicit confirmation before rerunning with `force`.
+Dry-run output starts with `DRY RUN: no files will be changed`, prints the action context and planned summary, then lists each detailed action, including no-op reset previews with no manifest. A dry-run `yolo` sync does not require the typed `YOLO` confirmation because no files are changed.
+
+`--force` can overwrite same-named unmanaged conflicts during `sync`, replace managed files that drifted from the manifest, or let `reset` clean up a managed target even when files have drifted or gone missing. It does not bypass safety checks: target directories still cannot be unsafe locations or symlinks, manifest-managed filenames must stay in the target root, manifest/managed/target files must be regular files, and symlinks are still rejected.
+
+`status --target <path>` is read-only. If `<path>` is a safe but missing target directory, it exits successfully and reports the target as missing, the manifest as missing, and zero managed files; `--json` reports the same state with `target_exists: false`.
+
+The interactive wrapper does not bypass those checks; it surfaces the same force-required conditions and asks for explicit confirmation before rerunning with `force`. Read-only interactive status prints immediately without a separate `Proceed?` prompt. Interactive sync defaults to the current manifest's pack and mode when they are available, with `safe` as the fallback mode.

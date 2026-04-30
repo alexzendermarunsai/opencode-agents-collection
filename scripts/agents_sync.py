@@ -57,8 +57,61 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def read_text(path: Path) -> str:
-    return path.read_text(encoding="utf-8")
+def format_os_error(exc: OSError) -> str:
+    return exc.strerror or str(exc)
+
+
+def path_exists(path: Path) -> bool:
+    try:
+        return path.exists()
+    except OSError as exc:
+        raise SyncError(f"unable to inspect path: {path}: {format_os_error(exc)}") from exc
+
+
+def path_is_symlink(path: Path, label: str = "path") -> bool:
+    try:
+        return path.is_symlink()
+    except OSError as exc:
+        raise SyncError(f"unable to inspect {label}: {path}: {format_os_error(exc)}") from exc
+
+
+def path_is_dir(path: Path, label: str = "path") -> bool:
+    try:
+        return path.is_dir()
+    except OSError as exc:
+        raise SyncError(f"unable to inspect {label}: {path}: {format_os_error(exc)}") from exc
+
+
+def path_is_file(path: Path, label: str = "path") -> bool:
+    try:
+        return path.is_file()
+    except OSError as exc:
+        raise SyncError(f"unable to inspect {label}: {path}: {format_os_error(exc)}") from exc
+
+
+def ensure_regular_file_if_exists(path: Path, label: str) -> None:
+    if path_is_symlink(path, label):
+        raise SyncError(f"{label} is a symlink: {path}")
+    if not path_exists(path):
+        return
+    if not path_is_file(path, label):
+        raise SyncError(f"{label} must be a regular file: {path}")
+
+
+def ensure_regular_file_exists(path: Path, label: str) -> None:
+    ensure_regular_file_if_exists(path, label)
+    if not path_exists(path):
+        raise SyncError(f"{label} does not exist: {path}")
+
+
+def read_text(path: Path, label: str = "file") -> str:
+    ensure_regular_file_exists(path, label)
+    try:
+        return path.read_text(encoding="utf-8")
+    except UnicodeDecodeError as exc:
+        raise SyncError(f"{label} is not valid UTF-8: {path}") from exc
+    except OSError as exc:
+        raise SyncError(f"unable to read {label}: {path}: {format_os_error(exc)}") from exc
 
 
 def parse_frontmatter_sections(content: str) -> tuple[list[str], list[str], str]:
@@ -198,7 +251,7 @@ def list_source_agents(pack: str) -> list[AgentSource]:
     pack_dir = REPO_ROOT / pack / "agents"
     sources: list[AgentSource] = []
     for path in sorted(pack_dir.glob("*.md")):
-        content = read_text(path)
+        content = read_text(path, "source file")
         sources.append(
             AgentSource(
                 path=path,
@@ -243,14 +296,22 @@ def confirm_yolo() -> bool:
     return input("Type YOLO to continue: ").strip() == "YOLO"
 
 
-def atomic_write(path: Path, content: str) -> None:
-    fd, temp_path = tempfile.mkstemp(prefix=f".{path.name}.", dir=str(path.parent))
+def atomic_write(path: Path, content: str, label: str = "target file") -> None:
+    ensure_regular_file_if_exists(path, label)
     try:
-        with os.fdopen(fd, "w", encoding="utf-8") as handle:
-            handle.write(content)
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temp_path, path)
+        fd, temp_path = tempfile.mkstemp(prefix=f".{path.name}.", dir=str(path.parent))
+    except OSError as exc:
+        raise SyncError(f"unable to prepare write for {path}: {format_os_error(exc)}") from exc
+    try:
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                handle.write(content)
+                handle.flush()
+                os.fsync(handle.fileno())
+            ensure_regular_file_if_exists(path, label)
+            os.replace(temp_path, path)
+        except OSError as exc:
+            raise SyncError(f"unable to write file: {path}: {format_os_error(exc)}") from exc
     finally:
         if os.path.exists(temp_path):
             os.unlink(temp_path)
@@ -302,14 +363,18 @@ def manifest_files(manifest: dict[str, Any] | None, target: Path) -> dict[str, d
 
 def load_manifest(target: Path) -> dict[str, Any] | None:
     path = manifest_path(target)
-    if not path.exists():
-        return None
-    if path.is_symlink():
+    if path_is_symlink(path, "manifest path"):
         raise SyncError("manifest path is a symlink")
+    if not path_exists(path):
+        return None
+    ensure_regular_file_if_exists(path, "manifest path")
     try:
-        return json.loads(read_text(path))
+        manifest = json.loads(read_text(path, "manifest path"))
     except json.JSONDecodeError as exc:
         raise SyncError(f"invalid manifest JSON: {exc}") from exc
+    if not isinstance(manifest, dict):
+        raise SyncError("manifest root must be an object")
+    return manifest
 
 
 def ensure_safe_target(target_arg: str, *, allow_create: bool = False) -> Path:
@@ -317,10 +382,13 @@ def ensure_safe_target(target_arg: str, *, allow_create: bool = False) -> Path:
         raise SyncError("target path must not be empty")
 
     target_input = Path(target_arg).expanduser()
-    if target_input.exists():
-        if not target_input.is_dir():
+    if path_is_symlink(target_input, "target directory"):
+        raise SyncError("target directory must not be a symlink")
+    target_input_exists = path_exists(target_input)
+    if target_input_exists:
+        if not path_is_dir(target_input, "target directory"):
             raise SyncError("target must be a directory")
-        if target_input.is_symlink():
+        if path_is_symlink(target_input, "target directory"):
             raise SyncError("target directory must not be a symlink")
         unresolved_absolute = Path(os.path.abspath(target_input))
         target = target_input.resolve()
@@ -330,13 +398,13 @@ def ensure_safe_target(target_arg: str, *, allow_create: bool = False) -> Path:
 
         existing_parent = target_input.parent
         missing_parts: list[str] = [target_input.name]
-        while not existing_parent.exists():
+        while not path_exists(existing_parent):
             missing_parts.append(existing_parent.name)
             existing_parent = existing_parent.parent
 
-        if not existing_parent.is_dir():
+        if not path_is_dir(existing_parent, "target parent"):
             raise SyncError("target parent must be a directory")
-        if existing_parent.is_symlink():
+        if path_is_symlink(existing_parent, "target parent"):
             raise SyncError("target directory must not traverse symlinks")
 
         unresolved_parent = Path(os.path.abspath(existing_parent))
@@ -350,7 +418,7 @@ def ensure_safe_target(target_arg: str, *, allow_create: bool = False) -> Path:
     home = Path.home().resolve()
     repo_root = REPO_ROOT.resolve()
 
-    if target_input.exists() and unresolved_absolute != target:
+    if target_input_exists and unresolved_absolute != target:
         raise SyncError("target directory must not traverse symlinks")
 
     if target == Path("/"):
@@ -367,14 +435,15 @@ def ensure_safe_target(target_arg: str, *, allow_create: bool = False) -> Path:
 
 
 def verify_no_symlink(path: Path, label: str) -> None:
-    if path.is_symlink():
+    if path_is_symlink(path, label):
         raise SyncError(f"{label} is a symlink: {path}")
 
 
-def file_hash_if_exists(path: Path) -> str | None:
-    if not path.exists():
+def file_hash_if_exists(path: Path, label: str = "file") -> str | None:
+    ensure_regular_file_if_exists(path, label)
+    if not path_exists(path):
         return None
-    return sha256_text(read_text(path))
+    return sha256_text(read_text(path, label))
 
 
 def managed_state(target: Path, manifest: dict[str, Any] | None) -> tuple[list[str], list[str], list[str]]:
@@ -386,11 +455,11 @@ def managed_state(target: Path, manifest: dict[str, Any] | None) -> tuple[list[s
     missing: list[str] = []
     for rel_name, info in sorted(files.items()):
         path = managed_file_path(target, rel_name)
-        verify_no_symlink(path, "managed file")
-        if not path.exists():
+        ensure_regular_file_if_exists(path, "managed file")
+        if not path_exists(path):
             missing.append(rel_name)
             continue
-        current_hash = file_hash_if_exists(path)
+        current_hash = file_hash_if_exists(path, "managed file")
         if current_hash != info.get("installed_sha256"):
             drifted.append(rel_name)
         else:
@@ -414,7 +483,7 @@ def plan_sync(target: Path, pack: str, mode: str, force: bool) -> SyncPlan:
     all_names = [source.name for source in sources]
     rendered: dict[str, dict[str, str]] = {}
     for source in sources:
-        verify_no_symlink(target / source.filename, "target file")
+        ensure_regular_file_if_exists(target / source.filename, "target file")
         rendered[source.filename] = {
             "name": source.name,
             "source": str(source.path.relative_to(REPO_ROOT)),
@@ -433,13 +502,14 @@ def plan_sync(target: Path, pack: str, mode: str, force: bool) -> SyncPlan:
 
     for filename, info in sorted(rendered.items()):
         path = target / filename
-        if path.exists() and (not existing_manifest or filename not in existing_managed) and not force:
+        ensure_regular_file_if_exists(path, "target file")
+        if path_exists(path) and (not existing_manifest or filename not in existing_managed) and not force:
             raise SyncError(f"unmanaged conflicting file exists: {path}; rerun with --force")
-        current_hash = file_hash_if_exists(path)
+        current_hash = file_hash_if_exists(path, "target file")
         desired_hash = sha256_text(info["content"])
         if current_hash == desired_hash:
             planned_actions.append(f"keep {path}")
-        elif path.exists():
+        elif path_exists(path):
             planned_actions.append(f"update {path}")
         else:
             planned_actions.append(f"write {path}")
@@ -467,8 +537,49 @@ def print_actions(planned_actions: list[str]) -> None:
         print(action)
 
 
+def ensure_target_dir_for_mutation(target: Path) -> None:
+    if path_exists(target):
+        if path_is_symlink(target, "target directory"):
+            raise SyncError("target directory must not be a symlink")
+        if not path_is_dir(target, "target directory"):
+            raise SyncError("target must be a directory")
+
+
+def preflight_sync_mutation(plan: SyncPlan) -> None:
+    ensure_target_dir_for_mutation(plan.target)
+    ensure_regular_file_if_exists(manifest_path(plan.target), "manifest path")
+    for filename in plan.stale_files:
+        ensure_regular_file_if_exists(managed_file_path(plan.target, filename), "managed file")
+    for filename in plan.rendered:
+        ensure_regular_file_if_exists(plan.target / filename, "target file")
+
+
+def preflight_reset_mutation(plan: ResetPlan) -> None:
+    ensure_target_dir_for_mutation(plan.target)
+    ensure_regular_file_if_exists(manifest_path(plan.target), "manifest path")
+    if not plan.manifest:
+        return
+    for filename in manifest_files(plan.manifest, plan.target):
+        ensure_regular_file_if_exists(managed_file_path(plan.target, filename), "managed file")
+
+
+def print_dry_run(action: str, target: Path, planned_actions: list[str], *, pack: str | None = None, mode: str | None = None, force: bool = False) -> None:
+    context = [f"action={action}", f"target={target}"]
+    if pack is not None:
+        context.append(f"pack={pack}")
+    if mode is not None:
+        context.append(f"mode={mode}")
+    context.append(f"force={'yes' if force else 'no'}")
+
+    print("DRY RUN: no files will be changed")
+    print("Context: " + ", ".join(context))
+    print(f"Planned changes: {summarize_actions(planned_actions)}")
+    print("Detailed actions:")
+    print_actions(planned_actions)
+
+
 def summarize_status(payload: dict[str, Any]) -> str:
-    target_state = "existing" if Path(payload["target"]).exists() else "missing"
+    target_state = "existing" if payload.get("target_exists") else "missing"
     summary = [
         f"target={target_state}",
         f"manifest={'present' if payload['manifest'] else 'missing'}",
@@ -480,6 +591,31 @@ def summarize_status(payload: dict[str, Any]) -> str:
         summary.append(f"pack={payload['pack']}")
         summary.append(f"mode={payload['mode']}")
     return ", ".join(summary)
+
+
+def render_status_human(payload: dict[str, Any]) -> str:
+    target_state = "existing" if payload.get("target_exists") else "missing"
+    lines = [
+        f"target: {payload['target']}",
+        f"target state: {target_state}",
+        f"manifest: {'present' if payload['manifest'] else 'missing'}",
+    ]
+    if payload.get("pack"):
+        lines.append(f"pack: {payload['pack']}")
+        lines.append(f"mode: {payload['mode']}")
+    lines.extend(
+        [
+            f"managed files: {payload['managed_files']}",
+            f"ok files: {len(payload['ok_files'])}",
+            f"drifted files: {len(payload['drifted_files'])}",
+        ]
+    )
+    if payload["drifted_files"]:
+        lines.append("  " + ", ".join(payload["drifted_files"]))
+    lines.append(f"missing files: {len(payload['missing_files'])}")
+    if payload["missing_files"]:
+        lines.append("  " + ", ".join(payload["missing_files"]))
+    return "\n".join(lines)
 
 
 def summarize_actions(planned_actions: list[str]) -> str:
@@ -529,29 +665,17 @@ def interactive_command(args: argparse.Namespace) -> int:
     action = prompt_choice("Action", ("sync", "status", "reset"))
 
     if action == "status":
-        print("Preview: show current managed state")
-        if not prompt_yes_no("Proceed?", default=False):
-            print("Cancelled.")
-            return 0
-        print(f"target: {payload['target']}")
-        print(f"manifest: {'present' if payload['manifest'] else 'missing'}")
-        if payload.get("pack"):
-            print(f"pack: {payload['pack']}")
-            print(f"mode: {payload['mode']}")
-        print(f"managed files: {payload['managed_files']}")
-        print(f"ok files: {len(payload['ok_files'])}")
-        print(f"drifted files: {len(payload['drifted_files'])}")
-        if payload["drifted_files"]:
-            print("  " + ", ".join(payload["drifted_files"]))
-        print(f"missing files: {len(payload['missing_files'])}")
-        if payload["missing_files"]:
-            print("  " + ", ".join(payload["missing_files"]))
+        print(render_status_human(payload))
         return 0
 
     force = False
     if action == "sync":
-        pack = prompt_choice("Pack", SUPPORTED_PACKS)
-        mode = prompt_choice("Mode", SUPPORTED_MODES, default="safe")
+        manifest_pack = payload.get("pack")
+        manifest_mode = payload.get("mode")
+        pack_default = manifest_pack if manifest_pack in SUPPORTED_PACKS else None
+        mode_default = manifest_mode if manifest_mode in SUPPORTED_MODES else "safe"
+        pack = prompt_choice("Pack", SUPPORTED_PACKS, default=pack_default)
+        mode = prompt_choice("Mode", SUPPORTED_MODES, default=mode_default)
         try:
             plan = plan_sync(target, pack, mode, force=False)
         except SyncError as exc:
@@ -597,7 +721,7 @@ def interactive_command(args: argparse.Namespace) -> int:
         force = True
         plan = plan_reset(target, force=True)
 
-    if not target.exists() or not plan.manifest:
+    if not path_exists(target) or not plan.manifest:
         print("Preview: reset has nothing to remove")
     else:
         print(f"Preview: action=reset, target={target}, force={'yes' if force else 'no'}")
@@ -605,7 +729,7 @@ def interactive_command(args: argparse.Namespace) -> int:
     if not prompt_yes_no("Proceed?", default=False):
         print("Cancelled.")
         return 0
-    if not target.exists():
+    if not path_exists(target):
         print("nothing to reset")
         return 0
     return reset_command(argparse.Namespace(target=str(target), dry_run=False, force=force))
@@ -634,7 +758,7 @@ def sync_command(args: argparse.Namespace) -> int:
     plan = plan_sync(target, args.pack, args.mode, args.force)
 
     if args.dry_run:
-        print_actions(plan.planned_actions)
+        print_dry_run("sync", target, plan.planned_actions, pack=args.pack, mode=args.mode, force=args.force)
         return 0
 
     if args.mode == "yolo" and not getattr(args, "confirmed_yolo", False):
@@ -642,18 +766,28 @@ def sync_command(args: argparse.Namespace) -> int:
             print("Cancelled.")
             return 0
 
-    target.mkdir(parents=True, exist_ok=True)
+    preflight_sync_mutation(plan)
+
+    try:
+        target.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise SyncError(f"unable to create target directory: {target}: {format_os_error(exc)}") from exc
+
+    preflight_sync_mutation(plan)
 
     for filename in plan.stale_files:
         path = managed_file_path(target, filename)
-        if path.exists():
-            verify_no_symlink(path, "managed file")
-            path.unlink()
+        if path_exists(path):
+            ensure_regular_file_if_exists(path, "managed file")
+            try:
+                path.unlink()
+            except OSError as exc:
+                raise SyncError(f"unable to remove managed file: {path}: {format_os_error(exc)}") from exc
 
     for filename, info in sorted(plan.rendered.items()):
-        atomic_write(target / filename, info["content"])
+        atomic_write(target / filename, info["content"], "target file")
 
-    atomic_write(manifest_path(target), json.dumps(build_manifest(args.pack, args.mode, target, plan.rendered), indent=2) + "\n")
+    atomic_write(manifest_path(target), json.dumps(build_manifest(args.pack, args.mode, target, plan.rendered), indent=2) + "\n", "manifest path")
     print_actions(plan.planned_actions)
     return 0
 
@@ -663,6 +797,7 @@ def status_payload(target: Path) -> dict[str, Any]:
     ok, drifted, missing = managed_state(target, manifest)
     payload = {
         "target": str(target),
+        "target_exists": path_exists(target),
         "manifest": manifest is not None,
         "managed_files": len(manifest_files(manifest, target)),
         "ok_files": ok,
@@ -676,44 +811,39 @@ def status_payload(target: Path) -> dict[str, Any]:
 
 
 def status_command(args: argparse.Namespace) -> int:
-    target = ensure_safe_target(args.target)
+    target = ensure_safe_target(args.target, allow_create=True)
     payload = status_payload(target)
     if args.json:
         print(json.dumps(payload, indent=2))
     else:
-        print(f"target: {payload['target']}")
-        print(f"manifest: {'present' if payload['manifest'] else 'missing'}")
-        if payload.get("pack"):
-            print(f"pack: {payload['pack']}")
-            print(f"mode: {payload['mode']}")
-        print(f"managed files: {payload['managed_files']}")
-        print(f"ok files: {len(payload['ok_files'])}")
-        print(f"drifted files: {len(payload['drifted_files'])}")
-        if payload["drifted_files"]:
-            print("  " + ", ".join(payload["drifted_files"]))
-        print(f"missing files: {len(payload['missing_files'])}")
-        if payload["missing_files"]:
-            print("  " + ", ".join(payload["missing_files"]))
+        print(render_status_human(payload))
     return 0
 
 
 def reset_command(args: argparse.Namespace) -> int:
     target = ensure_safe_target(args.target)
     plan = plan_reset(target, args.force)
+    if args.dry_run:
+        print_dry_run("reset", target, plan.planned_actions, force=args.force)
+        return 0
     if not plan.manifest:
         print("nothing to reset")
         return 0
 
-    if args.dry_run:
-        print_actions(plan.planned_actions)
-        return 0
+    preflight_reset_mutation(plan)
 
     for filename in sorted(manifest_files(plan.manifest, target)):
         path = managed_file_path(target, filename)
-        if path.exists():
-            verify_no_symlink(path, "managed file")
-            path.unlink()
-    manifest_path(target).unlink(missing_ok=True)
+        if path_exists(path):
+            ensure_regular_file_if_exists(path, "managed file")
+            try:
+                path.unlink()
+            except OSError as exc:
+                raise SyncError(f"unable to remove managed file: {path}: {format_os_error(exc)}") from exc
+    try:
+        manifest_path(target).unlink(missing_ok=True)
+    except OSError as exc:
+        raise SyncError(f"unable to remove manifest: {manifest_path(target)}: {format_os_error(exc)}") from exc
     print_actions(plan.planned_actions)
     return 0
 
@@ -727,7 +857,11 @@ def build_parser() -> argparse.ArgumentParser:
     sync.add_argument("--target", required=True)
     sync.add_argument("--mode", default="safe", choices=SUPPORTED_MODES)
     sync.add_argument("--dry-run", action="store_true")
-    sync.add_argument("--force", action="store_true")
+    sync.add_argument(
+        "--force",
+        action="store_true",
+        help="overwrite unmanaged conflicts or managed drift; does not bypass safety checks",
+    )
     sync.set_defaults(func=sync_command)
 
     status = subparsers.add_parser("status", help="show managed sync state for a target directory")
@@ -738,7 +872,11 @@ def build_parser() -> argparse.ArgumentParser:
     reset = subparsers.add_parser("reset", help="remove only manifest-managed files from a target directory")
     reset.add_argument("--target", required=True)
     reset.add_argument("--dry-run", action="store_true")
-    reset.add_argument("--force", action="store_true")
+    reset.add_argument(
+        "--force",
+        action="store_true",
+        help="remove managed files even when drift/missing files are detected; does not bypass safety checks",
+    )
     reset.set_defaults(func=reset_command)
 
     interactive = subparsers.add_parser("interactive", help="guided interactive wrapper around sync, status, and reset")
