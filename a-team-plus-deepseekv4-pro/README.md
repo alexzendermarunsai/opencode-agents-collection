@@ -188,4 +188,4 @@ Use a specialist directly for fast validation:
 - The folder name is just a template label; the agent prompts are written to be reusable outside this directory.
 - In this setup, orchestrator delegation and `permission.task` should use the declared markdown `name:` values, not the filename stems.
 - If you use this as a live OpenCode agents directory, confirm your setup supports loading agents from the `agents/` subdirectory.
-- `model: deepseek/deepseek-v4-pro` follows OpenCode's `provider/model-id` format and is present in Models.dev as DeepSeek V4 Pro. You still need a configured DeepSeek provider/API key. OpenCode exposes DeepSeek V4 Pro variants (`low`, `medium`, `high`, and `max`); this pack uses the OpenCode `variant:` frontmatter field to select role-appropriate variants and does not set raw `reasoningEffort` directly.
+- `model: opencode-go/deepseek-v4-pro` is the OpenCode Go provider/model ID for DeepSeek V4 Pro. OpenCode exposes DeepSeek V4 Pro variants (`low`, `medium`, `high`, and `max`); this pack uses the OpenCode `variant:` frontmatter field to select role-appropriate variants and does not set raw `reasoningEffort` directly.

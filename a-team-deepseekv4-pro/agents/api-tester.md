@@ -1,7 +1,7 @@
 ---
 name: API Tester
 description: API validation specialist focused on functional correctness, integration reliability, performance signals, and security-conscious testing.
-model: deepseek/deepseek-v4-pro
+model: opencode-go/deepseek-v4-pro
 variant: medium
 mode: subagent
 steps: 25

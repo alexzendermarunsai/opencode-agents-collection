@@ -1,7 +1,7 @@
 ---
 name: Technical Writer
 description: Documentation specialist for clear developer docs, product guides, references, and implementation-facing writing.
-model: deepseek/deepseek-v4-pro
+model: opencode-go/deepseek-v4-pro
 variant: low
 mode: subagent
 steps: 15

@@ -1,7 +1,7 @@
 ---
 name: Security Engineer
 description: Security review specialist for threat modeling, vulnerability assessment, hardening guidance, and secure release risk evaluation.
-model: deepseek/deepseek-v4-pro
+model: opencode-go/deepseek-v4-pro
 variant: high
 mode: subagent
 steps: 25

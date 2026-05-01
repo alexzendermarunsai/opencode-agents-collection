@@ -1,7 +1,7 @@
 ---
 name: Rapid Prototyper
 description: Prototype and MVP specialist for quickly validating ideas with minimal but testable product slices.
-model: deepseek/deepseek-v4-pro
+model: opencode-go/deepseek-v4-pro
 variant: low
 mode: subagent
 steps: 20

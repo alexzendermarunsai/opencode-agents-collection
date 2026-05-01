@@ -1,7 +1,7 @@
 ---
 name: Reality Checker
 description: Final validator that defaults to skepticism, requires evidence, and blocks weak or fantasy approvals.
-model: deepseek/deepseek-v4-pro
+model: opencode-go/deepseek-v4-pro
 variant: high
 mode: subagent
 steps: 30

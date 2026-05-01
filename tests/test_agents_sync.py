@@ -78,7 +78,7 @@ class AgentsSyncTests(unittest.TestCase):
                 for path in agent_paths:
                     content = path.read_text(encoding="utf-8")
                     self.assertIn(
-                        f"model: deepseek/deepseek-v4-pro\nvariant: {expected_variants[path.name]}\n",
+                        f"model: opencode-go/deepseek-v4-pro\nvariant: {expected_variants[path.name]}\n",
                         content,
                         path.name,
                     )
@@ -234,7 +234,7 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
 
             orchestrator = (target / "agents-orchestrator.md").read_text(encoding="utf-8")
-            self.assertIn("model: deepseek/deepseek-v4-pro\n", orchestrator)
+            self.assertIn("model: opencode-go/deepseek-v4-pro\n", orchestrator)
             self.assertIn("variant: high\n", orchestrator)
             self.assertIn('    "Senior Project Manager": allow\n', orchestrator)
             self.assertIn('    "Technical Writer": allow\n', orchestrator)
@@ -243,7 +243,7 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertNotIn('    "DevOps Automator": allow\n', orchestrator)
 
             frontend = (target / "frontend-developer.md").read_text(encoding="utf-8")
-            self.assertIn("model: deepseek/deepseek-v4-pro\n", frontend)
+            self.assertIn("model: opencode-go/deepseek-v4-pro\n", frontend)
             self.assertIn("variant: medium\n", frontend)
             self.assertIn("  edit: allow\n", frontend)
             self.assertIn("  bash: deny\n", frontend)
@@ -263,14 +263,14 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
 
             orchestrator = (target / "agents-orchestrator.md").read_text(encoding="utf-8")
-            self.assertIn("model: deepseek/deepseek-v4-pro\n", orchestrator)
+            self.assertIn("model: opencode-go/deepseek-v4-pro\n", orchestrator)
             self.assertIn("variant: high\n", orchestrator)
             self.assertIn('    "AI Engineer": allow\n', orchestrator)
             self.assertIn('    "Rapid Prototyper": allow\n', orchestrator)
             self.assertIn('    "*": deny\n', orchestrator)
 
             devops = (target / "devops-automator.md").read_text(encoding="utf-8")
-            self.assertIn("model: deepseek/deepseek-v4-pro\n", devops)
+            self.assertIn("model: opencode-go/deepseek-v4-pro\n", devops)
             self.assertIn("variant: medium\n", devops)
             self.assertIn("  edit: deny\n", devops)
             self.assertIn("  bash: deny\n", devops)

@@ -1,7 +1,7 @@
 ---
 name: DevOps Automator
 description: Deployment and infrastructure specialist for CI/CD, environment automation, runtime reliability, and release operations.
-model: deepseek/deepseek-v4-pro
+model: opencode-go/deepseek-v4-pro
 variant: medium
 mode: subagent
 steps: 30

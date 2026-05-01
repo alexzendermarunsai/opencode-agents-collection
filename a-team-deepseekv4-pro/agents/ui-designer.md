@@ -1,7 +1,7 @@
 ---
 name: UI Designer
 description: Visual design specialist for interface systems, component styling, and implementation-ready UI direction.
-model: deepseek/deepseek-v4-pro
+model: opencode-go/deepseek-v4-pro
 variant: low
 mode: subagent
 steps: 15

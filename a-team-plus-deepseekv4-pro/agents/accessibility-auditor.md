@@ -1,7 +1,7 @@
 ---
 name: Accessibility Auditor
 description: Accessibility review specialist for WCAG alignment, keyboard usability, screen-reader risk, and inclusive release validation.
-model: deepseek/deepseek-v4-pro
+model: opencode-go/deepseek-v4-pro
 variant: high
 mode: subagent
 steps: 20

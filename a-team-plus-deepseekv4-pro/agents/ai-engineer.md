@@ -1,7 +1,7 @@
 ---
 name: AI Engineer
 description: AI implementation specialist for model integration, inference workflows, data pipelines, and production-ready intelligent features.
-model: deepseek/deepseek-v4-pro
+model: opencode-go/deepseek-v4-pro
 variant: high
 mode: subagent
 steps: 30
