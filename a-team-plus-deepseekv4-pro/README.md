@@ -1,18 +1,23 @@
 # A-Team Plus for DeepSeek v4 Pro
 
-A DeepSeek v4 Pro-optimized variant of `a-team-plus` for planning, discovery, design, implementation, validation, deployment, performance, security, accessibility, AI work, and documentation.
+A fully DeepSeek-native structured-prompt variant of `a-team-plus` for planning, discovery, design, implementation, validation, deployment, performance, security, accessibility, AI work, and documentation.
 
 ## What It Is
 
 `a-team-plus-deepseekv4-pro` keeps the same specialist agent roster as `a-team-plus`, but retargets the agents to DeepSeek v4 Pro and adds concise DeepSeek-oriented operating guidance.
 
-## How It Differs From A-Team Plus
+## How It Differs
 
-- the specialist roster and intent match `a-team-plus`, with DeepSeek v4 Pro operating guidance applied across the agents
-- `agents-orchestrator` keeps the same roster routing while adding DeepSeek v4 Pro orchestration guidance
-- the README and pack framing position this as the `a-team-plus` choice when DeepSeek v4 Pro is your primary model
+This pack has been rewritten as a DeepSeek-native prompt set rather than a GPT/OpenAI prompt clone. The agent bodies use DeepSeek-oriented structure and execution patterns:
 
-If you want the same expanded shipping workflow without model-specific positioning, use `a-team-plus`.
+- explicit `[Context]`, `[Task]`, and `[Format]` framing for complex work
+- delimited evidence handling for pasted code, docs, logs, and specs
+- ordered execution steps with role-specific decision points
+- concise final answers after internal systematic reasoning
+- visible assumptions, uncertainty, evidence, and validation state
+- fewest-useful tool and research loops instead of broad exploratory passes
+
+The frontmatter uses `model: opencode-go/deepseek-v4-pro`, the OpenCode Go provider/model ID for DeepSeek V4 Pro. Role-specific `variant:` values select the OpenCode DeepSeek V4 Pro variant appropriate to each agent. The pack intentionally does not use `reasoningEffort:`.
 
 ## When To Choose It
 
@@ -111,7 +116,8 @@ Current defaults in this template:
 
 - Read-only: `senior-project-manager`, `ux-architect`, `ui-designer`
 - Read-only with optional web access: `ux-researcher`
-- Edit + bash on approval: `frontend-developer`, `backend-architect`, `senior-developer`, `devops-automator`, `rapid-prototyper`
+- Edit + bash on approval: `backend-architect`, `senior-developer`, `devops-automator`, `rapid-prototyper`
+- Edit + bash on approval and web access on approval: `frontend-developer`
 - Edit + bash on approval and optional web access: `ai-engineer`
 - Validation with bash on approval: `reality-checker`, `agents-orchestrator`, `performance-benchmarker`, `security-engineer`, `accessibility-auditor`
 - Validation with bash on approval and optional web access: `api-tester`
@@ -185,7 +191,7 @@ Use a specialist directly for fast validation:
 
 ## Notes
 
-- The folder name is just a template label; the agent prompts are written to be reusable outside this directory.
+- The folder name is just a template label; the agent prompts are written as DeepSeek-native structured prompts and are reusable outside this directory.
 - In this setup, orchestrator delegation and `permission.task` should use the declared markdown `name:` values, not the filename stems.
 - If you use this as a live OpenCode agents directory, confirm your setup supports loading agents from the `agents/` subdirectory.
 - `model: opencode-go/deepseek-v4-pro` is the OpenCode Go provider/model ID for DeepSeek V4 Pro. OpenCode exposes DeepSeek V4 Pro variants (`low`, `medium`, `high`, and `max`); this pack uses the OpenCode `variant:` frontmatter field to select role-appropriate variants and does not set raw `reasoningEffort` directly.

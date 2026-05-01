@@ -2,6 +2,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -27,7 +28,74 @@ def load_agents_sync_module():
 AGENTS_SYNC = load_agents_sync_module()
 
 
+DEEPSEEK_PACKS = ("a-team-deepseekv4-pro", "a-team-plus-deepseekv4-pro")
+
+DEEPSEEK_EXPECTED_VARIANTS = {
+    "accessibility-auditor.md": "high",
+    "agents-orchestrator.md": "high",
+    "ai-engineer.md": "high",
+    "api-tester.md": "medium",
+    "backend-architect.md": "medium",
+    "devops-automator.md": "medium",
+    "frontend-developer.md": "medium",
+    "performance-benchmarker.md": "high",
+    "rapid-prototyper.md": "low",
+    "reality-checker.md": "high",
+    "security-engineer.md": "high",
+    "senior-developer.md": "high",
+    "senior-project-manager.md": "medium",
+    "technical-writer.md": "low",
+    "ui-designer.md": "low",
+    "ux-architect.md": "medium",
+    "ux-researcher.md": "medium",
+}
+
+
 class AgentsSyncTests(unittest.TestCase):
+    def deepseek_agent_paths(self):
+        for pack in DEEPSEEK_PACKS:
+            agent_paths = sorted((REPO_ROOT / pack / "agents").glob("*.md"))
+            self.assertTrue(agent_paths, pack)
+            for path in agent_paths:
+                yield pack, path
+
+    def read_agent_parts(self, path):
+        content = path.read_text(encoding="utf-8")
+        self.assertTrue(content.startswith("---\n"), path.name)
+        _, frontmatter, body = content.split("---\n", 2)
+        fields = {}
+        for line in frontmatter.splitlines():
+            if ": " in line and not line.startswith(" "):
+                key, value = line.split(": ", 1)
+                fields[key] = value
+        return content, fields, body
+
+    def parse_task_allowlist(self, content):
+        _, frontmatter, _ = content.split("---\n", 2)
+        allowlist = []
+        in_task_block = False
+        for line in frontmatter.splitlines():
+            if line == "  task:":
+                in_task_block = True
+                continue
+            if not in_task_block:
+                continue
+            if not line.startswith("    "):
+                break
+            match = re.fullmatch(r'    "([^"]+)": allow', line)
+            if match and match.group(1) != "*":
+                allowlist.append(match.group(1))
+        return allowlist
+
+    def markdown_section(self, body, heading):
+        match = re.search(rf"^## {re.escape(heading)}\n\n(?P<section>.*?)(?=\n## |\Z)", body, re.MULTILINE | re.DOTALL)
+        self.assertIsNotNone(match, heading)
+        return match.group("section")
+
+    def backticked_bullets_in_section(self, body, heading):
+        section = self.markdown_section(body, heading)
+        return re.findall(r"^- `([^`]+)`(?::|$)", section, re.MULTILINE)
+
     def run_cli(self, *args, cwd=None, input_text=None):
         return subprocess.run(
             [sys.executable, str(SCRIPT), *args],
@@ -52,37 +120,68 @@ class AgentsSyncTests(unittest.TestCase):
         self.assertNotIn("Traceback", stderr)
 
     def test_deepseek_source_agents_use_deepseek_v4_pro_model_and_variant(self):
-        expected_variants = {
-            "accessibility-auditor.md": "high",
-            "agents-orchestrator.md": "high",
-            "ai-engineer.md": "high",
-            "api-tester.md": "medium",
-            "backend-architect.md": "medium",
-            "devops-automator.md": "medium",
-            "frontend-developer.md": "medium",
-            "performance-benchmarker.md": "high",
-            "rapid-prototyper.md": "low",
-            "reality-checker.md": "high",
-            "security-engineer.md": "high",
-            "senior-developer.md": "high",
-            "senior-project-manager.md": "medium",
-            "technical-writer.md": "low",
-            "ui-designer.md": "low",
-            "ux-architect.md": "medium",
-            "ux-researcher.md": "medium",
-        }
-        for pack in ("a-team-deepseekv4-pro", "a-team-plus-deepseekv4-pro"):
+        for pack, path in self.deepseek_agent_paths():
+            with self.subTest(pack=pack, agent=path.name):
+                _, fields, _ = self.read_agent_parts(path)
+                self.assertEqual(fields.get("model"), "opencode-go/deepseek-v4-pro")
+                self.assertEqual(fields.get("variant"), DEEPSEEK_EXPECTED_VARIANTS[path.name])
+
+    def test_deepseek_source_agents_include_native_structured_prompt_guidance(self):
+        required_markers = (
+            "## DeepSeek v4 Pro Operating Guidance",
+            "[Context]",
+            "[Task]",
+            "[Format]",
+        )
+        required_wording = (
+            r"\bevidence\b",
+            r"\bvalidat(?:e|ed|ion)\b",
+            r"\buncertain(?:ty)?\b",
+        )
+
+        for pack, path in self.deepseek_agent_paths():
+            with self.subTest(pack=pack, agent=path.name):
+                _, _, body = self.read_agent_parts(path)
+                for marker in required_markers:
+                    self.assertIn(marker, body, path.name)
+                for pattern in required_wording:
+                    self.assertRegex(body, pattern, path.name)
+
+    def test_deepseek_source_agents_do_not_include_gpt_model_remnants(self):
+        forbidden_literals = ("reasoningEffort:", "openai/")
+        forbidden_gpt_model_id = re.compile(r"\bgpt-\d", re.IGNORECASE)
+
+        for pack, path in self.deepseek_agent_paths():
+            with self.subTest(pack=pack, agent=path.name):
+                content, _, _ = self.read_agent_parts(path)
+                for literal in forbidden_literals:
+                    self.assertNotIn(literal, content, path.name)
+                self.assertIsNone(forbidden_gpt_model_id.search(content), path.name)
+
+    def test_deepseek_orchestrators_route_with_declared_task_names(self):
+        for pack in DEEPSEEK_PACKS:
             with self.subTest(pack=pack):
-                agent_paths = sorted((REPO_ROOT / pack / "agents").glob("*.md"))
-                self.assertTrue(agent_paths)
-                for path in agent_paths:
-                    content = path.read_text(encoding="utf-8")
-                    self.assertIn(
-                        f"model: opencode-go/deepseek-v4-pro\nvariant: {expected_variants[path.name]}\n",
-                        content,
-                        path.name,
-                    )
-                    self.assertNotIn("model: openai/gpt-5.5\n", content, path.name)
+                agents_dir = REPO_ROOT / pack / "agents"
+                orchestrator_path = agents_dir / "agents-orchestrator.md"
+                content, _, body = self.read_agent_parts(orchestrator_path)
+
+                allowlist = self.parse_task_allowlist(content)
+                declared_names = []
+                filename_stems = set()
+                for agent_path in sorted(agents_dir.glob("*.md")):
+                    if agent_path.name == "agents-orchestrator.md":
+                        continue
+                    _, fields, _ = self.read_agent_parts(agent_path)
+                    declared_names.append(fields["name"])
+                    filename_stems.add(agent_path.stem)
+
+                registered_targets = self.backticked_bullets_in_section(body, "Registered Delegation Targets")
+                routing_targets = self.backticked_bullets_in_section(body, "Routing Guide")
+
+                self.assertEqual(set(allowlist), set(declared_names))
+                self.assertCountEqual(registered_targets, allowlist)
+                self.assertCountEqual(routing_targets, allowlist)
+                self.assertFalse(filename_stems.intersection(registered_targets + routing_targets))
 
     def test_sync_safe_rewrites_permissions_and_writes_manifest(self):
         with tempfile.TemporaryDirectory() as tmp:
