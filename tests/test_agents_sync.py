@@ -51,6 +51,16 @@ class AgentsSyncTests(unittest.TestCase):
         self.assertIn("Permission denied", stderr)
         self.assertNotIn("Traceback", stderr)
 
+    def test_deepseek_source_agents_use_deepseek_v4_pro_model(self):
+        for pack in ("a-team-deepseekv4-pro", "a-team-plus-deepseekv4-pro"):
+            with self.subTest(pack=pack):
+                agent_paths = sorted((REPO_ROOT / pack / "agents").glob("*.md"))
+                self.assertTrue(agent_paths)
+                for path in agent_paths:
+                    content = path.read_text(encoding="utf-8")
+                    self.assertIn("model: deepseek/deepseek-v4-pro\n", content, path.name)
+                    self.assertNotIn("model: openai/gpt-5.5\n", content, path.name)
+
     def test_sync_safe_rewrites_permissions_and_writes_manifest(self):
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "agents"
@@ -191,6 +201,58 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertEqual(manifest["pack"], "a-team-gpt-5.5")
             self.assertEqual(manifest["mode"], "safe")
             self.assertEqual(manifest["files"]["agents-orchestrator.md"]["source"], "a-team-gpt-5.5/agents/agents-orchestrator.md")
+
+    def test_sync_safe_supports_a_team_deepseekv4_pro_with_a_team_permissions_and_model(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+
+            result = self.run_cli("sync", "--pack", "a-team-deepseekv4-pro", "--target", str(target), "--mode", "safe")
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+            orchestrator = (target / "agents-orchestrator.md").read_text(encoding="utf-8")
+            self.assertIn("model: deepseek/deepseek-v4-pro\n", orchestrator)
+            self.assertIn('    "Senior Project Manager": allow\n', orchestrator)
+            self.assertIn('    "Technical Writer": allow\n', orchestrator)
+            self.assertIn('    "*": deny\n', orchestrator)
+            self.assertNotIn('    "AI Engineer": allow\n', orchestrator)
+            self.assertNotIn('    "DevOps Automator": allow\n', orchestrator)
+
+            frontend = (target / "frontend-developer.md").read_text(encoding="utf-8")
+            self.assertIn("model: deepseek/deepseek-v4-pro\n", frontend)
+            self.assertIn("  edit: allow\n", frontend)
+            self.assertIn("  bash: deny\n", frontend)
+            self.assertIn("  webfetch: deny\n", frontend)
+
+            manifest = json.loads((target / ".opencode-agents-state.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["pack"], "a-team-deepseekv4-pro")
+            self.assertEqual(manifest["mode"], "safe")
+            self.assertEqual(manifest["files"]["agents-orchestrator.md"]["source"], "a-team-deepseekv4-pro/agents/agents-orchestrator.md")
+
+    def test_sync_safe_supports_a_team_plus_deepseekv4_pro_with_plus_permissions_and_model(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+
+            result = self.run_cli("sync", "--pack", "a-team-plus-deepseekv4-pro", "--target", str(target), "--mode", "safe")
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+            orchestrator = (target / "agents-orchestrator.md").read_text(encoding="utf-8")
+            self.assertIn("model: deepseek/deepseek-v4-pro\n", orchestrator)
+            self.assertIn('    "AI Engineer": allow\n', orchestrator)
+            self.assertIn('    "Rapid Prototyper": allow\n', orchestrator)
+            self.assertIn('    "*": deny\n', orchestrator)
+
+            devops = (target / "devops-automator.md").read_text(encoding="utf-8")
+            self.assertIn("model: deepseek/deepseek-v4-pro\n", devops)
+            self.assertIn("  edit: deny\n", devops)
+            self.assertIn("  bash: deny\n", devops)
+            self.assertIn("  webfetch: deny\n", devops)
+
+            manifest = json.loads((target / ".opencode-agents-state.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["pack"], "a-team-plus-deepseekv4-pro")
+            self.assertEqual(manifest["mode"], "safe")
+            self.assertEqual(manifest["files"]["agents-orchestrator.md"]["source"], "a-team-plus-deepseekv4-pro/agents/agents-orchestrator.md")
 
     def test_sync_yolo_rewrites_ask_to_allow_and_records_mode(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -585,7 +647,7 @@ class AgentsSyncTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn("Action:\n  1) sync\n  2) status\n  3) reset", result.stdout)
-            self.assertIn("Pack:\n  1) a-team\n  2) a-team-gpt-5.4\n  3) a-team-gpt-5.5", result.stdout)
+            self.assertIn("Pack:\n  1) a-team\n  2) a-team-gpt-5.4\n  3) a-team-gpt-5.5\n  4) a-team-deepseekv4-pro", result.stdout)
             self.assertIn("Mode:\n  1) safe\n  2) trusted\n  3) yolo", result.stdout)
             manifest = json.loads((target / ".opencode-agents-state.json").read_text(encoding="utf-8"))
             self.assertEqual(manifest["pack"], "a-team-gpt-5.5")

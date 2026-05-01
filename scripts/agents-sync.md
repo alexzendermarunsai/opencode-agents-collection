@@ -10,9 +10,9 @@ Use `scripts/agents_sync.py` to install a curated pack into a live OpenCode agen
 
 The script only installs from curated pack directories. It never installs from `reference-agents/`.
 
-Supported packs: `a-team`, `a-team-gpt-5.4`, `a-team-gpt-5.5`, `a-team-plus`, `a-team-plus-gpt-5.4`, and `a-team-plus-gpt-5.5`.
+Supported packs: `a-team`, `a-team-gpt-5.4`, `a-team-gpt-5.5`, `a-team-deepseekv4-pro`, `a-team-plus`, `a-team-plus-gpt-5.4`, `a-team-plus-gpt-5.5`, and `a-team-plus-deepseekv4-pro`.
 
-As a quick rule: use `a-team` packs for the leaner workflow, `a-team-plus` packs for broader shipping coverage, and the `*-gpt-*` variants when a specific GPT generation is your primary model.
+As a quick rule: use `a-team` packs for the leaner workflow, `a-team-plus` packs for broader shipping coverage, and the model-specific variants when GPT-5.4, GPT-5.5, or DeepSeek v4 Pro is your primary model.
 
 ## Commands
 
@@ -27,7 +27,7 @@ If the target directory does not exist yet, `sync` creates it after applying the
 Use `safe` mode explicitly:
 
 ```bash
-python3 scripts/agents_sync.py sync --pack a-team-gpt-5.4 --target ~/.config/opencode/agents --mode safe
+python3 scripts/agents_sync.py sync --pack a-team-deepseekv4-pro --target ~/.config/opencode/agents --mode safe
 ```
 
 Use `yolo` mode only when you intentionally want to remove approval prompts for `ask` permissions in the installed target files:
@@ -60,7 +60,7 @@ Example session:
 ```text
 $ python3 scripts/agents_sync.py interactive
 Target directory: ~/.config/opencode/agents
-Current state: target=existing, manifest=present, managed=11, drifted=0, missing=0, pack=a-team-gpt-5.4, mode=safe
+Current state: target=existing, manifest=present, managed=11, drifted=0, missing=0, pack=a-team-deepseekv4-pro, mode=safe
 Action:
   1) sync
   2) status
@@ -70,16 +70,18 @@ Pack:
   1) a-team
   2) a-team-gpt-5.4
   3) a-team-gpt-5.5
-  4) a-team-plus
-  5) a-team-plus-gpt-5.4
-  6) a-team-plus-gpt-5.5
-Choose pack [2]:
+  4) a-team-deepseekv4-pro
+  5) a-team-plus
+  6) a-team-plus-gpt-5.4
+  7) a-team-plus-gpt-5.5
+  8) a-team-plus-deepseekv4-pro
+Choose pack [4]:
 Mode:
   1) safe
   2) trusted
   3) yolo
 Choose mode [1]:
-Preview: action=sync, target=/home/alice/.config/opencode/agents, pack=a-team-gpt-5.4, mode=safe, force=no
+Preview: action=sync, target=/home/alice/.config/opencode/agents, pack=a-team-deepseekv4-pro, mode=safe, force=no
 Planned changes: write=1, keep=11
 Proceed? [y/N]: y
 ```

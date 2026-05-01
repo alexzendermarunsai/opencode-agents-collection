@@ -9,9 +9,11 @@ For normal day-to-day use, sync a curated pack into your live OpenCode agents di
 - `a-team/` - lean, balanced product-delivery workflow for planning, discovery, design, implementation, validation, and documentation
 - `a-team-gpt-5.4/` - GPT-5.4-optimized variant of `a-team` with the same specialist roster, a GPT-5.4-tuned orchestrator, and GPT-5.4-focused pack guidance
 - `a-team-gpt-5.5/` - GPT-5.5-optimized variant of `a-team` with the same specialist roster and GPT-5.5-specific tuning
+- `a-team-deepseekv4-pro/` - DeepSeek v4 Pro-optimized variant of `a-team` with the same specialist roster and DeepSeek-oriented operating guidance
 - `a-team-plus/` - expanded shipping workflow that adds deployment, performance, security, accessibility, AI, and rapid prototyping coverage
 - `a-team-plus-gpt-5.4/` - GPT-5.4-optimized variant of `a-team-plus` with the same specialist roster, a GPT-5.4-tuned orchestrator, a few GPT-5.4-tuned specialists, and GPT-5.4-focused pack guidance
 - `a-team-plus-gpt-5.5/` - GPT-5.5-optimized variant of `a-team-plus` with the same specialist roster and GPT-5.5-specific tuning
+- `a-team-plus-deepseekv4-pro/` - DeepSeek v4 Pro-optimized variant of `a-team-plus` with the same specialist roster and DeepSeek-oriented operating guidance
 
 ## Reference Agents
 
@@ -38,6 +40,12 @@ Choose `a-team-gpt-5.5` when:
 - GPT-5.5 is your primary model and you want that choice reflected in the pack behavior
 - the leaner `a-team` workflow fits, and GPT-5.5 is the main differentiator
 
+Choose `a-team-deepseekv4-pro` when:
+
+- you want the `a-team` specialist set with DeepSeek v4 Pro-specific tuning
+- DeepSeek v4 Pro is your primary model and you want concise guidance for structured context, ordered multi-step work, and evidence-backed conclusions
+- the leaner `a-team` workflow fits, and DeepSeek v4 Pro is the main differentiator
+
 Choose `a-team-plus` when:
 
 - the work includes deployment, CI/CD, or environment automation
@@ -56,6 +64,12 @@ Choose `a-team-plus-gpt-5.5` when:
 - you want the `a-team-plus` specialist set with GPT-5.5-specific tuning
 - GPT-5.5 is your primary model and you want that choice reflected in the pack behavior
 - the broader `a-team-plus` workflow fits, and GPT-5.5 is the main differentiator
+
+Choose `a-team-plus-deepseekv4-pro` when:
+
+- you want the `a-team-plus` specialist set with DeepSeek v4 Pro-specific tuning
+- DeepSeek v4 Pro is your primary model and you want concise guidance for structured context, ordered multi-step work, and evidence-backed conclusions
+- the broader `a-team-plus` workflow fits, and DeepSeek v4 Pro is the main differentiator
 
 ## Structure
 
@@ -76,7 +90,7 @@ Each team pack uses the same layout:
 
 Use `scripts/agents_sync.py` when you want to install a curated pack into a real OpenCode agents directory outside this repository.
 
-- `sync` installs `a-team`, `a-team-gpt-5.4`, `a-team-gpt-5.5`, `a-team-plus`, `a-team-plus-gpt-5.4`, or `a-team-plus-gpt-5.5` into a user-supplied target directory and writes a manifest/state file there
+- `sync` installs `a-team`, `a-team-gpt-5.4`, `a-team-gpt-5.5`, `a-team-deepseekv4-pro`, `a-team-plus`, `a-team-plus-gpt-5.4`, `a-team-plus-gpt-5.5`, or `a-team-plus-deepseekv4-pro` into a user-supplied target directory and writes a manifest/state file there
 - `safe` rewrites agent `permission` blocks to a stricter portable baseline; `trusted` installs the authored pack files as-is; `yolo` installs authored files, then rewrites only literal frontmatter `permission` values from `ask` to `allow`
 - `status` shows whether the target still matches the last managed install
 - `reset` removes only files tracked by the manifest/state file
