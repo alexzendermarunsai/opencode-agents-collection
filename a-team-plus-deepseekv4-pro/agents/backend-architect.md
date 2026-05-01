@@ -2,6 +2,7 @@
 name: Backend Architect
 description: Backend and systems specialist for APIs, data models, service boundaries, reliability, and maintainable server-side architecture.
 model: deepseek/deepseek-v4-pro
+variant: medium
 mode: subagent
 steps: 25
 color: "#3498DB"

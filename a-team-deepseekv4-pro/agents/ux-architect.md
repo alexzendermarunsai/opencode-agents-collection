@@ -2,6 +2,7 @@
 name: UX Architect
 description: Creates implementation-ready UX foundations, layout systems, and interface structure for product and engineering teams.
 model: deepseek/deepseek-v4-pro
+variant: medium
 mode: subagent
 steps: 20
 color: "#9B59B6"

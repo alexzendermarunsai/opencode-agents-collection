@@ -2,6 +2,7 @@
 name: Frontend Developer
 description: Frontend implementation specialist for accessible, responsive, and performant interfaces across modern web stacks.
 model: deepseek/deepseek-v4-pro
+variant: medium
 mode: subagent
 steps: 25
 color: "#00FFFF"

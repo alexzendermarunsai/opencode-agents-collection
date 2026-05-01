@@ -51,14 +51,37 @@ class AgentsSyncTests(unittest.TestCase):
         self.assertIn("Permission denied", stderr)
         self.assertNotIn("Traceback", stderr)
 
-    def test_deepseek_source_agents_use_deepseek_v4_pro_model(self):
+    def test_deepseek_source_agents_use_deepseek_v4_pro_model_and_variant(self):
+        expected_variants = {
+            "accessibility-auditor.md": "high",
+            "agents-orchestrator.md": "high",
+            "ai-engineer.md": "high",
+            "api-tester.md": "medium",
+            "backend-architect.md": "medium",
+            "devops-automator.md": "medium",
+            "frontend-developer.md": "medium",
+            "performance-benchmarker.md": "high",
+            "rapid-prototyper.md": "low",
+            "reality-checker.md": "high",
+            "security-engineer.md": "high",
+            "senior-developer.md": "high",
+            "senior-project-manager.md": "medium",
+            "technical-writer.md": "low",
+            "ui-designer.md": "low",
+            "ux-architect.md": "medium",
+            "ux-researcher.md": "medium",
+        }
         for pack in ("a-team-deepseekv4-pro", "a-team-plus-deepseekv4-pro"):
             with self.subTest(pack=pack):
                 agent_paths = sorted((REPO_ROOT / pack / "agents").glob("*.md"))
                 self.assertTrue(agent_paths)
                 for path in agent_paths:
                     content = path.read_text(encoding="utf-8")
-                    self.assertIn("model: deepseek/deepseek-v4-pro\n", content, path.name)
+                    self.assertIn(
+                        f"model: deepseek/deepseek-v4-pro\nvariant: {expected_variants[path.name]}\n",
+                        content,
+                        path.name,
+                    )
                     self.assertNotIn("model: openai/gpt-5.5\n", content, path.name)
 
     def test_sync_safe_rewrites_permissions_and_writes_manifest(self):
@@ -212,6 +235,7 @@ class AgentsSyncTests(unittest.TestCase):
 
             orchestrator = (target / "agents-orchestrator.md").read_text(encoding="utf-8")
             self.assertIn("model: deepseek/deepseek-v4-pro\n", orchestrator)
+            self.assertIn("variant: high\n", orchestrator)
             self.assertIn('    "Senior Project Manager": allow\n', orchestrator)
             self.assertIn('    "Technical Writer": allow\n', orchestrator)
             self.assertIn('    "*": deny\n', orchestrator)
@@ -220,6 +244,7 @@ class AgentsSyncTests(unittest.TestCase):
 
             frontend = (target / "frontend-developer.md").read_text(encoding="utf-8")
             self.assertIn("model: deepseek/deepseek-v4-pro\n", frontend)
+            self.assertIn("variant: medium\n", frontend)
             self.assertIn("  edit: allow\n", frontend)
             self.assertIn("  bash: deny\n", frontend)
             self.assertIn("  webfetch: deny\n", frontend)
@@ -239,12 +264,14 @@ class AgentsSyncTests(unittest.TestCase):
 
             orchestrator = (target / "agents-orchestrator.md").read_text(encoding="utf-8")
             self.assertIn("model: deepseek/deepseek-v4-pro\n", orchestrator)
+            self.assertIn("variant: high\n", orchestrator)
             self.assertIn('    "AI Engineer": allow\n', orchestrator)
             self.assertIn('    "Rapid Prototyper": allow\n', orchestrator)
             self.assertIn('    "*": deny\n', orchestrator)
 
             devops = (target / "devops-automator.md").read_text(encoding="utf-8")
             self.assertIn("model: deepseek/deepseek-v4-pro\n", devops)
+            self.assertIn("variant: medium\n", devops)
             self.assertIn("  edit: deny\n", devops)
             self.assertIn("  bash: deny\n", devops)
             self.assertIn("  webfetch: deny\n", devops)

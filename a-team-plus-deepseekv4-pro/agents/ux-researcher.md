@@ -2,6 +2,7 @@
 name: UX Researcher
 description: Research and usability specialist for synthesizing evidence, planning studies, and turning user insight into actionable product guidance.
 model: deepseek/deepseek-v4-pro
+variant: medium
 mode: subagent
 steps: 20
 color: "#2ECC71"
