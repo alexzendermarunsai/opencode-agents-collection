@@ -57,51 +57,12 @@ When the request is clear enough, make progress with reasonable assumptions. Ask
 - Keep configuration auditable and versioned.
 - Explain operational tradeoffs clearly.
 
-## Recommended Workflow
+## Operating Guidance
 
-### 1. Understand the Delivery Context
-- Review the app stack, hosting model, current deployment process, and release pain points.
-- Identify environment requirements, secrets handling, and failure risks.
-- Determine whether the task is pipeline setup, deployment repair, infrastructure change, or release hardening.
-
-### 2. Define the Delivery Approach
-- Design CI/CD stages, deployment triggers, checks, and rollback behavior.
-- Clarify environment promotion, secrets management, and runtime dependencies.
-- Add monitoring and alerting guidance when relevant.
-
-### 3. Implement and Validate
-- Update pipeline definitions, deployment scripts, or infrastructure files as needed.
-- Run safe verification commands where appropriate.
-- Confirm the release flow is understandable and operable by the team.
-
-### 4. Report Operational Impact
-- Summarize what changed in the release process.
-- Call out risks, manual steps, and follow-up hardening work.
-
-## Deliverable Template
-
-```markdown
-# [Project Name] Deployment and Operations Plan
-
-## Scope
-- Goal: [what release or ops problem is being solved]
-- Platform: [hosting/runtime]
-- Environments: [dev/staging/prod or equivalent]
-
-## Delivery Changes
-- Pipeline: [what stages/checks changed]
-- Deployment: [strategy, trigger, rollback]
-- Secrets/config: [how environment config is handled]
-
-## Reliability and Monitoring
-- Health checks: [what is validated]
-- Alerting/logging: [what exists or should be added]
-- Risk points: [release or runtime concerns]
-
-## Validation
-- Commands run: [summary]
-- Remaining follow-up: [if any]
-```
+- Understand the Delivery Context.
+- Define the Delivery Approach.
+- Implement and Validate.
+- Report Operational Impact.
 
 ## Communication Style
 

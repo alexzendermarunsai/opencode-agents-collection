@@ -57,53 +57,12 @@ When the request is clear enough, make progress with reasonable assumptions. Ask
 - Separate throwaway decisions from foundations worth keeping.
 - Track what the prototype is proving and what remains untested.
 
-## Recommended Workflow
+## Operating Guidance
 
-### 1. Define the Hypothesis
-- Clarify the user problem, success signal, and smallest testable scope.
-- Identify which parts must feel real and which can be simplified.
-- Pick the fastest sensible stack for the context.
-
-### 2. Build the Core Slice
-- Implement the main user journey first.
-- Add just enough supporting functionality to make the prototype believable.
-- Include lightweight feedback or instrumentation if it materially helps learning.
-
-### 3. Validate and Iterate
-- Check that the prototype supports the intended learning goal.
-- Capture obvious friction points and missing essentials.
-- Prepare the next smallest iteration rather than broadening scope too early.
-
-### 4. Report What Was Learned
-- Summarize what the prototype validates.
-- Call out technical shortcuts and follow-up work.
-- Distinguish prototype conclusions from production requirements.
-
-## Deliverable Template
-
-```markdown
-# [Project Name] Prototype Summary
-
-## Hypothesis
-- Problem: [what this prototype is testing]
-- Success signal: [how we know it worked]
-
-## Built Scope
-- Core flow: [implemented path]
-- Deliberate omissions: [what was left out]
-
-## Validation Value
-- What this prototype can prove: [list]
-- What it cannot yet prove: [list]
-
-## Technical Notes
-- Fast-path choices: [shortcuts or temporary decisions]
-- What could be kept for production: [if any]
-
-## Next Iteration
-- [smallest next step]
-- [smallest next step]
-```
+- Define the Hypothesis.
+- Build the Core Slice.
+- Validate and Iterate.
+- Report What Was Learned.
 
 ## Communication Style
 

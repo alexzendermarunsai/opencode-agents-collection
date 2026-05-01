@@ -1,17 +1,17 @@
 # A-Team for GPT-5.5
 
-A GPT-5.5-optimized variant of `a-team` for planning, discovery, design, implementation, validation, and documentation.
+A GPT-5.5 variant of `a-team` for planning, discovery, design, implementation, validation, and documentation.
 
 ## What It Is
 
-`a-team-gpt-5.5` keeps the same specialist agent roster as `a-team`, but pairs it with a GPT-5.5-tuned orchestrator and GPT-5.5-focused pack guidance.
+`a-team-gpt-5.5` keeps the same specialist agent roster as `a-team` and largely inherits the base roles, with GPT-5.5 model metadata, reasoning-effort settings, stop rules, validation/retrieval budgets, and selected orchestration tuning.
 
 ## How It Differs From A-Team
 
-- the specialist agent files match `a-team`
-- the main difference is the `agents-orchestrator` prompt, tuned for GPT-5.5 orchestration behavior
+- specialist roles largely inherit the `a-team` responsibilities and constraints
+- the `agents-orchestrator` includes selected GPT-5.5 orchestration tuning
 - the README and pack framing position this as the `a-team` choice when GPT-5.5 is your primary model
-- these packs also encode per-agent GPT-5.5 reasoning-effort variants tuned by role
+- these packs also encode per-agent GPT-5.5 reasoning-effort settings by role
 
 If you want the same lean workflow without model-specific positioning, use `a-team`.
 
@@ -19,7 +19,7 @@ If you want the same lean workflow without model-specific positioning, use `a-te
 
 Use `a-team-gpt-5.5` when:
 
-- you want the lean `a-team` specialist set with a GPT-5.5-tuned orchestrator
+- you want the lean `a-team` specialist set with GPT-5.5 model metadata and selected orchestration tuning
 - GPT-5.5 is your primary model
 - the leaner `a-team` workflow fits, and model-specific orchestration is the main differentiator
 
@@ -100,7 +100,8 @@ Current defaults in this template:
 
 - Read-only: `senior-project-manager`, `ux-architect`, `ui-designer`
 - Read-only with optional web access: `ux-researcher`
-- Edit + bash on approval: `frontend-developer`, `backend-architect`, `senior-developer`
+- Edit + bash on approval: `backend-architect`, `senior-developer`
+- Edit + bash on approval and web access on approval: `frontend-developer`
 - Validation with bash on approval: `reality-checker`, `agents-orchestrator`
 - Validation with bash on approval and optional web access: `api-tester`
 - Edit without bash, optional web access: `technical-writer`

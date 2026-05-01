@@ -1,17 +1,17 @@
 # A-Team Plus for GPT-5.5
 
-A GPT-5.5-optimized variant of `a-team-plus` for planning, discovery, design, implementation, validation, deployment, performance, security, accessibility, AI work, and documentation.
+A GPT-5.5 variant of `a-team-plus` for planning, discovery, design, implementation, validation, deployment, performance, security, accessibility, AI work, and documentation.
 
 ## What It Is
 
-`a-team-plus-gpt-5.5` keeps the same specialist agent roster as `a-team-plus`, but pairs it with a GPT-5.5-tuned orchestrator, GPT-5.5-focused pack guidance, and a small number of GPT-5.5-tuned high-judgment specialists.
+`a-team-plus-gpt-5.5` keeps the same specialist agent roster as `a-team-plus` and largely inherits the base roles, with GPT-5.5 model metadata, reasoning-effort settings, stop rules, validation/retrieval budgets, and selected orchestration and high-judgment specialist tuning.
 
 ## How It Differs From A-Team Plus
 
-- most specialist files match `a-team-plus`, but `ai-engineer` and `security-engineer` are also GPT-5.5-tuned in this pack
-- `agents-orchestrator` is tuned for GPT-5.5 orchestration behavior
+- specialist roles largely inherit the `a-team-plus` responsibilities and constraints
+- `agents-orchestrator` includes selected GPT-5.5 orchestration tuning
 - the README and pack framing position this as the `a-team-plus` choice when GPT-5.5 is your primary model
-- these packs also encode per-agent GPT-5.5 reasoning-effort variants tuned by role
+- these packs also encode per-agent GPT-5.5 reasoning-effort settings by role
 
 If you want the same expanded shipping workflow without model-specific positioning, use `a-team-plus`.
 
@@ -112,7 +112,8 @@ Current defaults in this template:
 
 - Read-only: `senior-project-manager`, `ux-architect`, `ui-designer`
 - Read-only with optional web access: `ux-researcher`
-- Edit + bash on approval: `frontend-developer`, `backend-architect`, `senior-developer`, `devops-automator`, `rapid-prototyper`
+- Edit + bash on approval: `backend-architect`, `senior-developer`, `devops-automator`, `rapid-prototyper`
+- Edit + bash on approval and web access on approval: `frontend-developer`
 - Edit + bash on approval and optional web access: `ai-engineer`
 - Validation with bash on approval: `reality-checker`, `agents-orchestrator`, `performance-benchmarker`, `security-engineer`, `accessibility-auditor`
 - Validation with bash on approval and optional web access: `api-tester`

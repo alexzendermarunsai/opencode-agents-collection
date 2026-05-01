@@ -59,53 +59,12 @@ When the request is clear enough, make progress with reasonable assumptions. Ask
 - Do not pretend load, security, or compatibility testing happened if it did not.
 - Keep the report compact; add endpoint-by-endpoint detail only when it changes the verdict.
 
-## Recommended Workflow
+## Operating Guidance
 
-### 1. Understand the API Surface
-- Identify the endpoints, contracts, auth model, and dependencies.
-- Determine which flows are most important or risky.
-- Note whether the task is validating a new API, a changed API, or an integration.
-
-### 2. Test Core Behavior
-- Check success paths, invalid inputs, auth behavior, and expected error responses.
-- Validate data shapes and contract assumptions.
-- Review edge cases and failure handling.
-
-### 3. Assess Risk Areas
-- Look for obvious performance concerns, weak rate limiting, missing validation, or brittle integration logic.
-- Test third-party integration handling when relevant.
-- Compare implementation behavior with documentation if docs exist.
-
-### 4. Report Readiness
-- Return a compact readiness report with tested scope, findings, gaps, and required fixes.
-- Separate confirmed issues from untested areas.
-- Explain what must change before release if the API is not ready.
-
-## Deliverable Template
-
-```markdown
-# [API Name] Readiness Report
-
-## Verdict
-- Status: PASS / NEEDS WORK / FAIL
-- Confidence: [low/medium/high]
-- Scope tested: [what was covered]
-- Basis: [responses, logs, code inspection, contract review, or limitations]
-
-## Findings
-- [confirmed behavior or defect] - Evidence: [response/log/code path/contract]
-- [confirmed behavior or defect] - Evidence: [response/log/code path/contract]
-
-## Gaps and Limits
-- [gap caused by missing environment, data, or tooling]
-
-## Required Fixes
-1. [issue]
-2. [issue]
-
-## Release Readiness
-- [plain statement of whether the API is ready and why]
-```
+- Understand the API Surface.
+- Test Core Behavior.
+- Assess Risk Areas.
+- Report Readiness.
 
 ## Reference Patterns
 

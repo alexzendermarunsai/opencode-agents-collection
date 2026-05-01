@@ -29,6 +29,7 @@ AGENTS_SYNC = load_agents_sync_module()
 
 
 DEEPSEEK_PACKS = ("a-team-deepseekv4-pro", "a-team-plus-deepseekv4-pro")
+GPT_5_5_PACKS = ("a-team-gpt-5.5", "a-team-plus-gpt-5.5")
 
 DEEPSEEK_EXPECTED_VARIANTS = {
     "accessibility-auditor.md": "high",
@@ -50,10 +51,64 @@ DEEPSEEK_EXPECTED_VARIANTS = {
     "ux-researcher.md": "medium",
 }
 
+GPT_5_5_EXPECTED_REASONING_EFFORT = {
+    "accessibility-auditor.md": "high",
+    "agents-orchestrator.md": "high",
+    "ai-engineer.md": "high",
+    "api-tester.md": "medium",
+    "backend-architect.md": "medium",
+    "devops-automator.md": "medium",
+    "frontend-developer.md": "medium",
+    "performance-benchmarker.md": "high",
+    "rapid-prototyper.md": "low",
+    "reality-checker.md": "high",
+    "security-engineer.md": "high",
+    "senior-developer.md": "high",
+    "senior-project-manager.md": "medium",
+    "technical-writer.md": "low",
+    "ui-designer.md": "low",
+    "ux-architect.md": "medium",
+    "ux-researcher.md": "medium",
+}
+
+GPT_5_5_EXPECTED_PERMISSIONS = {
+    "accessibility-auditor.md": {"edit": "deny", "bash": "ask", "webfetch": "deny"},
+    "agents-orchestrator.md": {"edit": "deny", "bash": "ask", "webfetch": "deny"},
+    "ai-engineer.md": {"edit": "allow", "bash": "ask", "webfetch": "ask"},
+    "api-tester.md": {"edit": "deny", "bash": "ask", "webfetch": "ask"},
+    "backend-architect.md": {"edit": "allow", "bash": "ask", "webfetch": "deny"},
+    "devops-automator.md": {"edit": "allow", "bash": "ask", "webfetch": "deny"},
+    "frontend-developer.md": {"edit": "allow", "bash": "ask", "webfetch": "ask"},
+    "performance-benchmarker.md": {"edit": "deny", "bash": "ask", "webfetch": "deny"},
+    "rapid-prototyper.md": {"edit": "allow", "bash": "ask", "webfetch": "deny"},
+    "reality-checker.md": {"edit": "deny", "bash": "ask", "webfetch": "deny"},
+    "security-engineer.md": {"edit": "deny", "bash": "ask", "webfetch": "deny"},
+    "senior-developer.md": {"edit": "allow", "bash": "ask", "webfetch": "deny"},
+    "senior-project-manager.md": {"edit": "deny", "bash": "deny", "webfetch": "deny"},
+    "technical-writer.md": {"edit": "allow", "bash": "deny", "webfetch": "ask"},
+    "ui-designer.md": {"edit": "deny", "bash": "deny", "webfetch": "deny"},
+    "ux-architect.md": {"edit": "deny", "bash": "deny", "webfetch": "deny"},
+    "ux-researcher.md": {"edit": "deny", "bash": "deny", "webfetch": "ask"},
+}
+
+GPT_5_5_REQUIRED_PROMPT_SECTION_GROUPS = (
+    ("Stop Rules",),
+    ("Core Responsibilities", "Core Rules"),
+    ("Operating Guidance", "Operating Rules", "Default Operating Posture"),
+    ("Success Criteria", "Completion Check"),
+)
+
 
 class AgentsSyncTests(unittest.TestCase):
     def deepseek_agent_paths(self):
         for pack in DEEPSEEK_PACKS:
+            agent_paths = sorted((REPO_ROOT / pack / "agents").glob("*.md"))
+            self.assertTrue(agent_paths, pack)
+            for path in agent_paths:
+                yield pack, path
+
+    def gpt_5_5_agent_paths(self):
+        for pack in GPT_5_5_PACKS:
             agent_paths = sorted((REPO_ROOT / pack / "agents").glob("*.md"))
             self.assertTrue(agent_paths, pack)
             for path in agent_paths:
@@ -87,6 +142,26 @@ class AgentsSyncTests(unittest.TestCase):
                 allowlist.append(match.group(1))
         return allowlist
 
+    def parse_permission_block(self, content):
+        _, frontmatter, _ = content.split("---\n", 2)
+        permissions = {}
+        in_permission_block = False
+        for line in frontmatter.splitlines():
+            if line == "permission:":
+                in_permission_block = True
+                continue
+            if not in_permission_block:
+                continue
+            if not line.startswith("  "):
+                break
+            match = re.fullmatch(r"  (edit|bash|webfetch): (allow|ask|deny)", line)
+            if match:
+                permissions[match.group(1)] = match.group(2)
+        return permissions
+
+    def markdown_headings(self, body):
+        return set(re.findall(r"^## (.+)$", body, re.MULTILINE))
+
     def markdown_section(self, body, heading):
         match = re.search(rf"^## {re.escape(heading)}\n\n(?P<section>.*?)(?=\n## |\Z)", body, re.MULTILINE | re.DOTALL)
         self.assertIsNotNone(match, heading)
@@ -118,6 +193,41 @@ class AgentsSyncTests(unittest.TestCase):
         self.assertIn(expected, stderr)
         self.assertIn("Permission denied", stderr)
         self.assertNotIn("Traceback", stderr)
+
+    def test_gpt_5_5_source_agents_use_gpt_5_5_model_and_reasoning_effort(self):
+        for pack, path in self.gpt_5_5_agent_paths():
+            with self.subTest(pack=pack, agent=path.name):
+                _, fields, _ = self.read_agent_parts(path)
+                self.assertIn(path.name, GPT_5_5_EXPECTED_REASONING_EFFORT)
+                self.assertEqual(fields.get("model"), "openai/gpt-5.5")
+                self.assertEqual(fields.get("reasoningEffort"), GPT_5_5_EXPECTED_REASONING_EFFORT[path.name])
+
+    def test_gpt_5_5_source_agents_include_expected_permissions(self):
+        for pack, path in self.gpt_5_5_agent_paths():
+            with self.subTest(pack=pack, agent=path.name):
+                content, _, _ = self.read_agent_parts(path)
+                self.assertIn(path.name, GPT_5_5_EXPECTED_PERMISSIONS)
+                self.assertEqual(self.parse_permission_block(content), GPT_5_5_EXPECTED_PERMISSIONS[path.name])
+
+    def test_gpt_5_5_source_agents_keep_required_prompt_sections(self):
+        for pack, path in self.gpt_5_5_agent_paths():
+            with self.subTest(pack=pack, agent=path.name):
+                _, _, body = self.read_agent_parts(path)
+                headings = self.markdown_headings(body)
+                for alternatives in GPT_5_5_REQUIRED_PROMPT_SECTION_GROUPS:
+                    self.assertTrue(
+                        headings.intersection(alternatives),
+                        f"{path.name} missing one of: {', '.join(alternatives)}",
+                    )
+
+    def test_gpt_5_5_source_agents_do_not_include_deepseek_model_remnants(self):
+        forbidden_literals = ("opencode-go/deepseek-v4-pro", "deepseek-v4-pro")
+
+        for pack, path in self.gpt_5_5_agent_paths():
+            with self.subTest(pack=pack, agent=path.name):
+                content, _, _ = self.read_agent_parts(path)
+                for literal in forbidden_literals:
+                    self.assertNotIn(literal, content, path.name)
 
     def test_deepseek_source_agents_use_deepseek_v4_pro_model_and_variant(self):
         for pack, path in self.deepseek_agent_paths():

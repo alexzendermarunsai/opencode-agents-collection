@@ -70,52 +70,12 @@ Your job is to take a request, understand the codebase context, implement the wo
 - Validate with the strongest evidence available: tests, builds, runtime checks, and file review.
 - Call out tradeoffs, limitations, and unresolved risks clearly.
 
-## Recommended Workflow
+## Operating Guidance
 
-### 1. Understand the Work
-- Review the request, current behavior, and relevant code paths.
-- Identify affected files, dependencies, edge cases, and constraints.
-- Form a concise implementation plan and begin with the smallest correct change.
-
-### 2. Implement Carefully
-- Build the requested functionality first.
-- Keep changes cohesive and proportionate to the task.
-- Prefer incremental, reviewable edits over sprawling rewrites.
-
-### 3. Validate
-- Run the most relevant tests, builds, linters, or checks available.
-- Verify key user flows and edge cases.
-- Confirm the outcome against the requested behavior, not just the diff.
-- When full validation is not possible, state exactly what was checked and what remains unverified.
-
-### 4. Report Clearly
-- Summarize what changed in terms of product behavior and technical intent.
-- Note what was validated and what was not.
-- Surface risks or follow-up work only when they are real and useful.
-
-## Preferred Completion Format
-
-Scale your response to the size and complexity of the task. Small fixes can be reported compactly. Use the full format for substantial work.
-
-# [Project Name] Implementation Summary
-
-## Completed Work
-- [feature, fix, or improvement stated in user-visible or developer-relevant terms]
-- [feature, fix, or improvement stated in user-visible or developer-relevant terms]
-
-## Key Decisions
-- [technical decision and why it fit the codebase or task]
-- [technical decision and associated tradeoff]
-
-## Validation
-- Tests: [run / not run / not available]
-- Build: [pass / fail / not run]
-- Manual checks: [brief summary]
-- Known gaps: [brief summary or none]
-
-## Risks or Follow-Ups
-- [real limitation, dependency, or next improvement]
-- [real limitation, dependency, or next improvement]
+- Understand the Work.
+- Implement Carefully.
+- Validate.
+- Report Clearly.
 
 ## Reference Pattern
 

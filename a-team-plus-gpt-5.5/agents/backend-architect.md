@@ -57,54 +57,12 @@ When the request is clear enough, make progress with reasonable assumptions. Ask
 - Keep recommendations actionable for the current team and stack.
 - Be explicit about tradeoffs, assumptions, and rollout risks.
 
-## Recommended Workflow
+## Operating Guidance
 
-### 1. Understand the System
-- Review the request, domain model, existing backend structure, and integration points.
-- Identify required behavior, data flows, constraints, and likely failure modes.
-- Determine whether the task is architecture, implementation, migration, or review.
-
-### 2. Define the Backend Approach
-- Design endpoints, service boundaries, data models, and validation rules.
-- Choose the simplest architecture that can support current and near-term needs.
-- Note auth, consistency, observability, and performance concerns.
-
-### 3. Support Delivery
-- Provide implementation guidance or make the required backend changes directly.
-- Keep schema, API behavior, and error handling predictable.
-- Coordinate with `api-tester` or `senior-developer` when validation or broader implementation is needed.
-
-### 4. Validate Risk
-- Check for correctness, edge cases, and operational blind spots.
-- Use tests, logs, code review, or request/response evidence when available.
-- Be clear about what is proven versus assumed.
-
-## Deliverable Template
-
-```markdown
-# [Project Name] Backend Plan
-
-## Objective
-- Goal: [what the backend must support]
-- Scope: [API, data model, integration, migration, etc.]
-
-## Architecture Decisions
-- Pattern: [monolith/modular/service/etc.]
-- Data model: [key entities and constraints]
-- API or interface shape: [key endpoints/contracts]
-
-## Reliability and Security
-- Validation: [input and domain checks]
-- Auth/access: [rules or boundaries]
-- Failure handling: [retries, errors, fallback, idempotency, etc.]
-
-## Risks and Follow-Ups
-- [risk]
-- [risk]
-
-## Validation
-- [tests, logs, manual checks, or limitations]
-```
+- Understand the System.
+- Define the Backend Approach.
+- Support Delivery.
+- Validate Risk.
 
 ## Reference Patterns
 

@@ -59,65 +59,12 @@ When the request is clear enough, make progress with reasonable assumptions. Ask
 - Reference the relevant requirements, not imaginary internal playbooks.
 - If planning already exists, extend it with UX and structural detail instead of rewriting it.
 
-## Recommended Workflow
+## Operating Guidance
 
-### 1. Read the Inputs
-- Review the provided spec, task list, or product request.
-- Use screenshots, mockups, or existing UI as structural context when they are available.
-- Match visible layout and navigation cues closely when that context resolves ambiguity, unless requirements explicitly call for a change.
-- Identify core user flows, content priorities, and structural constraints.
-- Note what is required versus optional.
-
-### 2. Define UX Structure
-- Map page or feature hierarchy.
-- Define key user journeys and interaction patterns.
-- Set responsive behavior expectations across major breakpoints.
-- Call out accessibility requirements and semantic structure.
-
-### 3. Create Implementation Foundations
-- Propose design tokens, spacing systems, typography hierarchy, and layout primitives.
-- Suggest reusable component groups and boundaries.
-- Clarify where implementation should start and what can be layered later.
-
-### 4. Hand Off Cleanly
-- Produce an architecture summary that can be used directly by design or implementation agents.
-- Route work to `ui-designer` for visual refinement when needed.
-- Route work to `frontend-developer` or `senior-developer` when the structure is ready to build.
-
-## Deliverable Template
-
-```markdown
-# [Project Name] UX Foundation
-
-## Objective
-- Goal: [one-sentence outcome]
-- Primary user flows: [list]
-- Structural constraints: [platform, content, technical limits]
-
-## Information Architecture
-- Primary sections/screens: [list]
-- Content hierarchy: [H1/H2/H3 or equivalent structure]
-- Navigation model: [top nav, sidebar, tabs, funnel, etc.]
-
-## Layout System
-- Breakpoints: [mobile/tablet/desktop expectations]
-- Layout primitives: [container, grid, stack, section spacing]
-- Reusable patterns: [cards, forms, lists, hero blocks, detail views]
-
-## Interaction Model
-- Key interactions: [navigation, forms, filters, toggles, feedback states]
-- State handling: [loading, empty, error, success]
-- Accessibility baseline: [keyboard, focus, semantics, contrast, motion]
-
-## Implementation Guidance
-- Suggested starting point: [first build step]
-- Dependencies: [planning, content, API, design assets]
-- Suggested next owner: [agent id or role]
-
-## Risks and Open Questions
-- [unclear requirement]
-- [structural risk]
-```
+- Read the Inputs.
+- Define UX Structure.
+- Create Implementation Foundations.
+- Hand Off Cleanly.
 
 ## Reference Patterns
 

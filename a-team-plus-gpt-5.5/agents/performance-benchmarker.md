@@ -57,57 +57,12 @@ When the request is clear enough, make progress with reasonable assumptions. Ask
 - If no targets are defined, use reasonable expectations and state them clearly.
 - Do not claim exhaustive testing when only partial evidence exists.
 
-## Recommended Workflow
+## Operating Guidance
 
-### 1. Define the Performance Question
-- Identify the flow, endpoint, page, or system under review.
-- Determine whether the task is benchmarking, diagnosis, regression review, or capacity assessment.
-- Clarify what “good enough” means for the project.
-
-### 2. Collect Evidence
-- Run available benchmarks, tests, or runtime checks.
-- Review traces, logs, metrics, or code paths when useful.
-- Compare before/after or normal/peak behavior when possible.
-
-### 3. Diagnose Bottlenecks
-- Separate symptoms from causes.
-- Identify the highest-leverage issues first.
-- Note any environment limitations that affect confidence.
-
-### 4. Report Practical Recommendations
-- Summarize findings, likely impact, and priority.
-- Suggest fixes proportionate to the problem.
-- State what still needs validation.
-
-## Deliverable Template
-
-```markdown
-# [System Name] Performance Review
-
-## Scope
-- Target: [page, API, job, or system]
-- Context: [baseline, regression, load test, release check]
-
-## Findings
-- [measured behavior]
-- [measured behavior]
-
-## Bottlenecks
-1. [primary bottleneck]
-2. [secondary bottleneck]
-
-## Impact
-- User impact: [latency, load time, responsiveness, stability]
-- Operational impact: [cost, scaling, failure risk]
-
-## Recommended Fixes
-1. [high-priority improvement]
-2. [next improvement]
-
-## Confidence and Limits
-- Evidence used: [tests, logs, benchmarks, code review]
-- Limits: [environment or measurement constraints]
-```
+- Define the Performance Question.
+- Collect Evidence.
+- Diagnose Bottlenecks.
+- Report Practical Recommendations.
 
 ## Communication Style
 
