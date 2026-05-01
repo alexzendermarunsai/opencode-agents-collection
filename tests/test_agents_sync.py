@@ -293,6 +293,76 @@ class AgentsSyncTests(unittest.TestCase):
                 self.assertCountEqual(routing_targets, allowlist)
                 self.assertFalse(filename_stems.intersection(registered_targets + routing_targets))
 
+    def test_deepseek_orchestrators_define_delegation_first_boundary(self):
+        specialist_domains = (
+            "specialist judgment",
+            "meaningful execution effort",
+            "implementation",
+            "design",
+            "research",
+            "testing",
+            "documentation",
+            "deployment",
+            "audits",
+            "validation",
+        )
+        direct_allowances = (
+            "clarification",
+            "decomposition",
+            "routing",
+            "light inspection",
+            "merging specialist outputs",
+            "concise synthesis",
+            "trivial direct answers",
+        )
+
+        for pack in DEEPSEEK_PACKS:
+            with self.subTest(pack=pack):
+                orchestrator_path = REPO_ROOT / pack / "agents" / "agents-orchestrator.md"
+                _, _, body = self.read_agent_parts(orchestrator_path)
+
+                boundary = self.markdown_section(body, "Delegation-First Boundary")
+                boundary_lower = boundary.lower()
+
+                for domain in specialist_domains:
+                    self.assertIn(domain, boundary_lower)
+                self.assertRegex(boundary_lower, r"default\s+to\s+delegation")
+                self.assertRegex(boundary_lower, r"matching\s+registered\s+agent\s+exists")
+                self.assertRegex(boundary_lower, r"fewest useful tool loops.*must not.*skip required delegation")
+
+                for allowance in direct_allowances:
+                    self.assertIn(allowance, boundary_lower)
+
+    def test_deepseek_orchestrators_reject_self_execution_and_check_delegation(self):
+        for pack in DEEPSEEK_PACKS:
+            with self.subTest(pack=pack):
+                orchestrator_path = REPO_ROOT / pack / "agents" / "agents-orchestrator.md"
+                _, _, body = self.read_agent_parts(orchestrator_path)
+
+                rules = self.markdown_section(body, "Orchestration Rules")
+                contract = self.markdown_section(body, "Delegation Contract and Completion Check")
+
+                self.assertRegex(
+                    rules.lower(),
+                    r"do not perform specialist work yourself when a matching specialist exists",
+                )
+                self.assertRegex(contract.lower(), r"verify specialist work was delegated rather than absorbed")
+                self.assertRegex(contract.lower(), r"suitable registered agent existed")
+                self.assertIn("declared display name", (rules + contract).lower())
+
+    def test_deepseek_plus_orchestrator_names_plus_domains_for_delegation(self):
+        orchestrator_path = REPO_ROOT / "a-team-plus-deepseekv4-pro" / "agents" / "agents-orchestrator.md"
+        _, _, body = self.read_agent_parts(orchestrator_path)
+        delegation_text = (
+            self.markdown_section(body, "Delegation-First Boundary")
+            + "\n"
+            + self.markdown_section(body, "Orchestration Rules")
+        )
+
+        for domain in ("security", "accessibility", "performance", "AI", "deployment"):
+            with self.subTest(domain=domain):
+                self.assertRegex(delegation_text, re.compile(rf"\b{re.escape(domain)}\b", re.IGNORECASE))
+
     def test_sync_safe_rewrites_permissions_and_writes_manifest(self):
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "agents"
