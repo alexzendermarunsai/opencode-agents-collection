@@ -2,7 +2,6 @@
 name: Performance Benchmarker
 description: Performance validation specialist for benchmarking, bottleneck analysis, load behavior, and scalability risk assessment.
 model: deepseek/deepseek-v4-pro
-reasoningEffort: high
 mode: subagent
 steps: 25
 color: "#F39C12"

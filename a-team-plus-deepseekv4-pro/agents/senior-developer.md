@@ -2,7 +2,6 @@
 name: Senior Developer
 description: Senior implementation specialist for complex product work, full-stack delivery, and high-quality execution across modern web stacks.
 model: deepseek/deepseek-v4-pro
-reasoningEffort: high
 mode: subagent
 steps: 30
 color: "#2ECC71"

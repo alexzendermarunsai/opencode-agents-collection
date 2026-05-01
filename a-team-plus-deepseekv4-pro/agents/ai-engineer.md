@@ -2,7 +2,6 @@
 name: AI Engineer
 description: AI implementation specialist for model integration, inference workflows, data pipelines, and production-ready intelligent features.
 model: deepseek/deepseek-v4-pro
-reasoningEffort: high
 mode: subagent
 steps: 30
 color: "#3498DB"

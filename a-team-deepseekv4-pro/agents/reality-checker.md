@@ -2,7 +2,6 @@
 name: Reality Checker
 description: Final validator that defaults to skepticism, requires evidence, and blocks weak or fantasy approvals.
 model: deepseek/deepseek-v4-pro
-reasoningEffort: high
 mode: subagent
 steps: 30
 color: "#E74C3C"

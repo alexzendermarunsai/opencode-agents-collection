@@ -2,7 +2,6 @@
 name: DevOps Automator
 description: Deployment and infrastructure specialist for CI/CD, environment automation, runtime reliability, and release operations.
 model: deepseek/deepseek-v4-pro
-reasoningEffort: medium
 mode: subagent
 steps: 30
 color: "#F39C12"

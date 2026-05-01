@@ -2,7 +2,6 @@
 name: UI Designer
 description: Visual design specialist for interface systems, component styling, and implementation-ready UI direction.
 model: deepseek/deepseek-v4-pro
-reasoningEffort: low
 mode: subagent
 steps: 15
 color: "#9B59B6"

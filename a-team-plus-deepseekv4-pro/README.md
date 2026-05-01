@@ -11,7 +11,6 @@ A DeepSeek v4 Pro-optimized variant of `a-team-plus` for planning, discovery, de
 - the specialist roster and intent match `a-team-plus`, with DeepSeek v4 Pro operating guidance applied across the agents
 - `agents-orchestrator` keeps the same roster routing while adding DeepSeek v4 Pro orchestration guidance
 - the README and pack framing position this as the `a-team-plus` choice when DeepSeek v4 Pro is your primary model
-- the per-agent `reasoningEffort` settings from the GPT-5.5 source pack are preserved by role
 
 If you want the same expanded shipping workflow without model-specific positioning, use `a-team-plus`.
 
@@ -189,4 +188,4 @@ Use a specialist directly for fast validation:
 - The folder name is just a template label; the agent prompts are written to be reusable outside this directory.
 - In this setup, orchestrator delegation and `permission.task` should use the declared markdown `name:` values, not the filename stems.
 - If you use this as a live OpenCode agents directory, confirm your setup supports loading agents from the `agents/` subdirectory.
-- `model: deepseek/deepseek-v4-pro` follows OpenCode's `provider/model-id` format and is present in Models.dev as DeepSeek V4 Pro. You still need a configured DeepSeek provider/API key. The preserved `reasoningEffort` value is an OpenCode passthrough model option; if runtime rejects or ignores it, confirm the DeepSeek provider/model behavior.
+- `model: deepseek/deepseek-v4-pro` follows OpenCode's `provider/model-id` format and is present in Models.dev as DeepSeek V4 Pro. You still need a configured DeepSeek provider/API key. DeepSeek V4 Pro is reasoning-capable, but current public OpenCode/DeepSeek docs do not show support for OpenAI-style `reasoningEffort`; this pack omits it to avoid an unsupported no-op or provider rejection.
