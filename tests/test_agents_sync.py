@@ -98,6 +98,30 @@ GPT_5_5_REQUIRED_PROMPT_SECTION_GROUPS = (
     ("Success Criteria", "Completion Check"),
 )
 
+PLUS_ONLY_SPECIALISTS = (
+    "Rapid Prototyper",
+    "AI Engineer",
+    "Performance Benchmarker",
+    "Security Engineer",
+    "Accessibility Auditor",
+    "DevOps Automator",
+)
+
+LEAN_DEEPSEEK_TRIGGER_TERMS = {
+    "Senior Project Manager": ("scope", "sequencing", "dependencies", "acceptance criteria"),
+    "UX Researcher": ("user evidence", "usability signals", "feedback interpretation", "evidence gaps"),
+    "UX Architect": ("flows", "ia", "forms", "navigation", "layout structure", "accessibility foundations"),
+    "UI Designer": ("visual hierarchy", "components", "typography", "color", "states", "polish"),
+    "Frontend Developer": ("ui implementation", "responsive behavior", "browser/app-flow checks"),
+    "Backend Architect": ("apis", "data models", "auth", "integrations", "service boundaries", "reliability"),
+    "Senior Developer": ("complex cross-layer implementation", "refactors", "integration cleanup"),
+    "API Tester": ("api contracts", "auth", "validation", "error behavior", "integration testing"),
+    "Reality Checker": ("final skeptical validation", "evidence gaps", "ship/handoff readiness"),
+    "Technical Writer": ("readme", "guides", "references", "onboarding", "release notes", "documentation"),
+}
+
+LEAN_MISSING_SPECIALIST_FALLBACK_PATTERN = r"missing[-\s]+specialist|no\s+suitable\s+registered\s+agent(?:\s+existed)?"
+
 
 class AgentsSyncTests(unittest.TestCase):
     def deepseek_agent_paths(self):
@@ -370,6 +394,42 @@ class AgentsSyncTests(unittest.TestCase):
         for domain in ("security", "accessibility", "performance", "AI", "deployment"):
             with self.subTest(domain=domain):
                 self.assertRegex(delegation_text, re.compile(rf"\b{re.escape(domain)}\b", re.IGNORECASE))
+
+    def test_deepseek_lean_orchestrator_has_specialist_routing_trigger_table(self):
+        orchestrator_path = REPO_ROOT / "a-team-deepseekv4-pro" / "agents" / "agents-orchestrator.md"
+        content, _, body = self.read_agent_parts(orchestrator_path)
+        section = self.markdown_section(body, "Specialist Routing Triggers")
+        rows = self.specialist_trigger_rows(section)
+        section_lower = section.lower()
+        content_lower = content.lower()
+
+        self.assertRegex(section_lower, r"materially\s+involves")
+        self.assertRegex(section_lower, r"delegate[\s\S]+matching\s+specialist")
+        self.assertRegex(section_lower, r"before\s+substantive\s+analysis")
+        self.assertRegex(section_lower, r"final\s+synthesis")
+        self.assertRegex(section_lower, r"do not perform[\s\S]+substantive work yourself")
+        self.assertRegex(section_lower, r"registered agent exists")
+        self.assertRegex(section_lower, r"trivial\s+direct\s+answers[\s\S]+identify[\s\S]+owning\s+specialist\s+only")
+        self.assertNotRegex(content_lower, LEAN_MISSING_SPECIALIST_FALLBACK_PATTERN)
+
+        self.assertCountEqual(rows.keys(), self.parse_task_allowlist(content))
+        for specialist in PLUS_ONLY_SPECIALISTS:
+            self.assertNotIn(specialist, rows)
+            self.assertNotIn(f"`{specialist}`".lower(), section_lower)
+            self.assertNotIn(specialist.lower(), content_lower)
+
+    def test_deepseek_lean_orchestrator_trigger_table_names_key_domains(self):
+        orchestrator_path = REPO_ROOT / "a-team-deepseekv4-pro" / "agents" / "agents-orchestrator.md"
+        _, _, body = self.read_agent_parts(orchestrator_path)
+        section = self.markdown_section(body, "Specialist Routing Triggers")
+        rows = self.specialist_trigger_rows(section)
+
+        self.assertCountEqual(rows, LEAN_DEEPSEEK_TRIGGER_TERMS)
+        for specialist, terms in LEAN_DEEPSEEK_TRIGGER_TERMS.items():
+            with self.subTest(specialist=specialist):
+                row = rows[specialist].lower()
+                for term in terms:
+                    self.assertIn(term, row)
 
     def test_deepseek_plus_orchestrator_has_specialist_routing_trigger_table(self):
         orchestrator_path = REPO_ROOT / "a-team-plus-deepseekv4-pro" / "agents" / "agents-orchestrator.md"
