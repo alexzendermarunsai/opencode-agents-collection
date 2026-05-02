@@ -171,6 +171,14 @@ class AgentsSyncTests(unittest.TestCase):
         section = self.markdown_section(body, heading)
         return re.findall(r"^- `([^`]+)`(?::|$)", section, re.MULTILINE)
 
+    def specialist_trigger_rows(self, section):
+        rows = {}
+        for line in section.splitlines():
+            match = re.fullmatch(r"\| `([^`]+)` \| (.+) \|", line)
+            if match:
+                rows[match.group(1)] = match.group(2)
+        return rows
+
     def run_cli(self, *args, cwd=None, input_text=None):
         return subprocess.run(
             [sys.executable, str(SCRIPT), *args],
@@ -363,61 +371,66 @@ class AgentsSyncTests(unittest.TestCase):
             with self.subTest(domain=domain):
                 self.assertRegex(delegation_text, re.compile(rf"\b{re.escape(domain)}\b", re.IGNORECASE))
 
-    def test_deepseek_plus_orchestrator_has_devops_mandatory_routing_gate(self):
+    def test_deepseek_plus_orchestrator_has_specialist_routing_trigger_table(self):
+        orchestrator_path = REPO_ROOT / "a-team-plus-deepseekv4-pro" / "agents" / "agents-orchestrator.md"
+        content, _, body = self.read_agent_parts(orchestrator_path)
+        section = self.markdown_section(body, "Specialist Routing Triggers")
+        rows = self.specialist_trigger_rows(section)
+        section_lower = section.lower()
+
+        self.assertNotIn("DevOps Mandatory Routing Gate", body)
+        self.assertRegex(section_lower, r"materially\s+involves")
+        self.assertRegex(section_lower, r"delegate[\s\S]+matching\s+specialist")
+        self.assertRegex(section_lower, r"before\s+substantive\s+analysis")
+        self.assertRegex(section_lower, r"final\s+synthesis")
+        self.assertRegex(section_lower, r"do not perform[\s\S]+substantive work yourself")
+        self.assertRegex(section_lower, r"registered agent exists")
+        self.assertRegex(section_lower, r"trivial\s+direct\s+answers[\s\S]+identify[\s\S]+owning\s+specialist\s+only")
+        self.assertNotIn("`devops-automator`", section_lower)
+
+        self.assertCountEqual(rows, self.parse_task_allowlist(content))
+
+    def test_deepseek_plus_orchestrator_trigger_table_names_key_domains(self):
         orchestrator_path = REPO_ROOT / "a-team-plus-deepseekv4-pro" / "agents" / "agents-orchestrator.md"
         _, _, body = self.read_agent_parts(orchestrator_path)
-        gate = self.markdown_section(body, "DevOps Mandatory Routing Gate")
-        gate_lower = gate.lower()
+        section = self.markdown_section(body, "Specialist Routing Triggers")
+        rows = self.specialist_trigger_rows(section)
 
-        self.assertRegex(gate, r"delegate[\s\S]+`DevOps Automator`")
-        self.assertNotIn("`devops-automator`", gate_lower)
-        self.assertRegex(gate_lower, r"before\s+doing\s+substantive\s+analysis")
-        self.assertRegex(gate_lower, r"final\s+synthesis")
+        expected_terms = {
+            "DevOps Automator": (
+                "ci/cd",
+                "deployment",
+                "deploy",
+                "release",
+                "infrastructure",
+                "infra",
+                "environments",
+                "env vars",
+                "runtime configuration",
+                "containers",
+                "docker",
+                "github actions",
+                "workflows",
+                "rollback",
+                "monitoring",
+                "operational safety",
+                "production",
+                "runtime reliability",
+            ),
+            "Security Engineer": ("auth risk", "permissions", "secrets", "vulnerabilities", "exposure", "hardening"),
+            "Accessibility Auditor": ("wcag", "keyboard flow", "semantics", "contrast", "screen-reader risk"),
+            "Performance Benchmarker": ("latency", "throughput", "benchmarks", "bottlenecks", "load/scalability"),
+            "AI Engineer": ("prompts", "model behavior", "evals", "retrieval/ranking/generation", "inference workflows"),
+            "API Tester": ("api contracts", "auth", "validation", "error behavior", "integration testing"),
+            "Frontend Developer": ("ui implementation", "responsive behavior", "browser/app-flow checks"),
+            "Backend Architect": ("apis", "data models", "auth", "integrations", "service boundaries", "reliability"),
+        }
 
-        trigger_terms = (
-            "ci/cd",
-            "deployment",
-            "deploy",
-            "release",
-            "infrastructure",
-            "infra",
-            "environments",
-            "env vars",
-            "runtime configuration",
-            "containers",
-            "docker",
-            "github actions",
-            "workflows",
-            "rollback",
-            "monitoring",
-            "operational safety",
-            "production",
-            "runtime reliability",
-        )
-        for term in trigger_terms:
-            with self.subTest(term=term):
-                self.assertIn(term, gate_lower)
-
-    def test_deepseek_plus_orchestrator_does_not_absorb_devops_work(self):
-        orchestrator_path = REPO_ROOT / "a-team-plus-deepseekv4-pro" / "agents" / "agents-orchestrator.md"
-        _, _, body = self.read_agent_parts(orchestrator_path)
-        gate = self.markdown_section(body, "DevOps Mandatory Routing Gate")
-        gate_lower = gate.lower()
-
-        self.assertRegex(gate, r"When\s+`DevOps Automator`\s+is\s+available")
-        self.assertIn("may only summarize", gate_lower)
-        self.assertIn("route", gate_lower)
-        for forbidden_work in (
-            "absorb devops work",
-            "troubleshoot devops",
-            "deployment issues",
-            "write deployment steps",
-            "alter ci config",
-            "claim deployment readiness",
-        ):
-            with self.subTest(forbidden_work=forbidden_work):
-                self.assertIn(forbidden_work, gate_lower)
-        self.assertRegex(gate_lower, r"trivial\s+direct\s+answers[\s\S]+only[\s\S]+identify")
+        for specialist, terms in expected_terms.items():
+            with self.subTest(specialist=specialist):
+                row = rows[specialist].lower()
+                for term in terms:
+                    self.assertIn(term, row)
 
     def test_sync_safe_rewrites_permissions_and_writes_manifest(self):
         with tempfile.TemporaryDirectory() as tmp:

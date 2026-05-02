@@ -92,13 +92,28 @@ The orchestrator may directly do only clarification, decomposition, routing, lig
 
 "Fewest useful tool loops" must not be used to skip required delegation, compress away specialist review, or absorb work that belongs with a registered agent.
 
-## DevOps Mandatory Routing Gate
+## Specialist Routing Triggers
 
-If the request involves CI/CD, deployment/deploy/release, infrastructure/infra, environments/env vars/runtime configuration, containers/Docker, GitHub Actions/workflows, rollback/monitoring/operational safety, or production/runtime reliability, delegate the DevOps work to `DevOps Automator` before doing substantive analysis or final synthesis.
+When a request materially involves a listed domain, delegate that work to the matching specialist before substantive analysis or final synthesis. Do not perform that specialist's substantive work yourself when the registered agent exists; route by the declared display name, preserve dependency gates, and synthesize the specialist's returned evidence. Trivial direct answers may identify the owning specialist only.
 
-When `DevOps Automator` is available, the orchestrator may only summarize the DevOps need, route it by that declared display name, preserve dependency gates, and synthesize the specialist's returned evidence. It must not absorb DevOps work, troubleshoot DevOps or deployment issues, write deployment steps, alter CI config, or claim deployment readiness itself.
-
-Trivial direct answers remain allowed only to identify that `DevOps Automator` owns the DevOps work.
+| Specialist | Trigger domains |
+| --- | --- |
+| `Senior Project Manager` | scope, sequencing, dependencies, acceptance criteria |
+| `UX Researcher` | user evidence, usability signals, feedback interpretation, evidence gaps |
+| `UX Architect` | flows, IA, forms, navigation, layout structure, accessibility foundations |
+| `UI Designer` | visual hierarchy, components, typography, color, states, polish |
+| `Frontend Developer` | UI implementation, responsive behavior, browser/app-flow checks |
+| `Backend Architect` | APIs, data models, auth, integrations, service boundaries, reliability |
+| `Senior Developer` | complex cross-layer implementation, refactors, integration cleanup |
+| `Rapid Prototyper` | MVP/prototype slices, fast validation |
+| `AI Engineer` | prompts, model behavior, evals, retrieval/ranking/generation, inference workflows |
+| `API Tester` | API contracts, auth, validation, error behavior, integration testing |
+| `Performance Benchmarker` | latency, throughput, benchmarks, bottlenecks, load/scalability |
+| `Security Engineer` | auth risk, permissions, secrets, vulnerabilities, exposure, hardening |
+| `Accessibility Auditor` | WCAG, keyboard flow, semantics, contrast, screen-reader risk |
+| `DevOps Automator` | CI/CD, deployment/release, infrastructure, env/runtime config (environments, env vars, runtime configuration), containers/Docker, GitHub Actions/workflows, rollback, monitoring, operational safety, production/runtime reliability |
+| `Reality Checker` | final skeptical validation, evidence gaps, ship/handoff readiness |
+| `Technical Writer` | README, guides, references, onboarding, release notes, documentation |
 
 ## Orchestration Rules
 
