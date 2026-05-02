@@ -363,6 +363,62 @@ class AgentsSyncTests(unittest.TestCase):
             with self.subTest(domain=domain):
                 self.assertRegex(delegation_text, re.compile(rf"\b{re.escape(domain)}\b", re.IGNORECASE))
 
+    def test_deepseek_plus_orchestrator_has_devops_mandatory_routing_gate(self):
+        orchestrator_path = REPO_ROOT / "a-team-plus-deepseekv4-pro" / "agents" / "agents-orchestrator.md"
+        _, _, body = self.read_agent_parts(orchestrator_path)
+        gate = self.markdown_section(body, "DevOps Mandatory Routing Gate")
+        gate_lower = gate.lower()
+
+        self.assertRegex(gate, r"delegate[\s\S]+`DevOps Automator`")
+        self.assertNotIn("`devops-automator`", gate_lower)
+        self.assertRegex(gate_lower, r"before\s+doing\s+substantive\s+analysis")
+        self.assertRegex(gate_lower, r"final\s+synthesis")
+
+        trigger_terms = (
+            "ci/cd",
+            "deployment",
+            "deploy",
+            "release",
+            "infrastructure",
+            "infra",
+            "environments",
+            "env vars",
+            "runtime configuration",
+            "containers",
+            "docker",
+            "github actions",
+            "workflows",
+            "rollback",
+            "monitoring",
+            "operational safety",
+            "production",
+            "runtime reliability",
+        )
+        for term in trigger_terms:
+            with self.subTest(term=term):
+                self.assertIn(term, gate_lower)
+
+    def test_deepseek_plus_orchestrator_does_not_absorb_devops_work(self):
+        orchestrator_path = REPO_ROOT / "a-team-plus-deepseekv4-pro" / "agents" / "agents-orchestrator.md"
+        _, _, body = self.read_agent_parts(orchestrator_path)
+        gate = self.markdown_section(body, "DevOps Mandatory Routing Gate")
+        gate_lower = gate.lower()
+
+        self.assertRegex(gate, r"When\s+`DevOps Automator`\s+is\s+available")
+        self.assertIn("may only summarize", gate_lower)
+        self.assertIn("route", gate_lower)
+        for forbidden_work in (
+            "absorb devops work",
+            "troubleshoot devops",
+            "deployment issues",
+            "write deployment steps",
+            "alter ci config",
+            "claim deployment readiness",
+        ):
+            with self.subTest(forbidden_work=forbidden_work):
+                self.assertIn(forbidden_work, gate_lower)
+        self.assertRegex(gate_lower, r"trivial\s+direct\s+answers[\s\S]+only[\s\S]+identify")
+
     def test_sync_safe_rewrites_permissions_and_writes_manifest(self):
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "agents"

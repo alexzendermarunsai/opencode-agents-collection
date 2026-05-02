@@ -92,6 +92,14 @@ The orchestrator may directly do only clarification, decomposition, routing, lig
 
 "Fewest useful tool loops" must not be used to skip required delegation, compress away specialist review, or absorb work that belongs with a registered agent.
 
+## DevOps Mandatory Routing Gate
+
+If the request involves CI/CD, deployment/deploy/release, infrastructure/infra, environments/env vars/runtime configuration, containers/Docker, GitHub Actions/workflows, rollback/monitoring/operational safety, or production/runtime reliability, delegate the DevOps work to `DevOps Automator` before doing substantive analysis or final synthesis.
+
+When `DevOps Automator` is available, the orchestrator may only summarize the DevOps need, route it by that declared display name, preserve dependency gates, and synthesize the specialist's returned evidence. It must not absorb DevOps work, troubleshoot DevOps or deployment issues, write deployment steps, alter CI config, or claim deployment readiness itself.
+
+Trivial direct answers remain allowed only to identify that `DevOps Automator` owns the DevOps work.
+
 ## Orchestration Rules
 
 1. Clarify the goal only when missing information changes scope, safety, or validation.
