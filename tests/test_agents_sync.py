@@ -31,6 +31,20 @@ AGENTS_SYNC = load_agents_sync_module()
 DEEPSEEK_PACKS = ("a-team-deepseekv4-pro", "a-team-plus-deepseekv4-pro")
 GPT_5_5_PACKS = ("a-team-gpt-5.5", "a-team-plus-gpt-5.5")
 
+CHINESE_TEAM_EXPECTED_MODELS = {
+    "agents-orchestrator.md": "opencode-go/qwen3.6-plus",
+    "senior-developer.md": "opencode-go/deepseek-v4-pro",
+    "frontend-developer.md": "opencode-go/deepseek-v4-pro",
+    "backend-architect.md": "opencode-go/deepseek-v4-pro",
+    "senior-project-manager.md": "opencode-go/glm-5.1",
+    "ux-researcher.md": "opencode-go/glm-5.1",
+    "ux-architect.md": "opencode-go/glm-5.1",
+    "ui-designer.md": "opencode-go/glm-5.1",
+    "api-tester.md": "opencode-go/glm-5.1",
+    "reality-checker.md": "opencode-go/glm-5.1",
+    "technical-writer.md": "opencode-go/glm-5.1",
+}
+
 DEEPSEEK_EXPECTED_VARIANTS = {
     "accessibility-auditor.md": "high",
     "agents-orchestrator.md": "high",
@@ -137,6 +151,12 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertTrue(agent_paths, pack)
             for path in agent_paths:
                 yield pack, path
+
+    def chinese_team_agent_paths(self):
+        agent_paths = sorted((REPO_ROOT / "chinese-team" / "agents").glob("*.md"))
+        self.assertTrue(agent_paths, "chinese-team")
+        for path in agent_paths:
+            yield path
 
     def read_agent_parts(self, path):
         content = path.read_text(encoding="utf-8")
@@ -260,6 +280,26 @@ class AgentsSyncTests(unittest.TestCase):
                 content, _, _ = self.read_agent_parts(path)
                 for literal in forbidden_literals:
                     self.assertNotIn(literal, content, path.name)
+
+    def test_chinese_team_source_agents_use_expected_models_without_extra_routing_metadata(self):
+        a_team_files = sorted(path.name for path in (REPO_ROOT / "a-team" / "agents").glob("*.md"))
+        chinese_team_files = sorted(path.name for path in (REPO_ROOT / "chinese-team" / "agents").glob("*.md"))
+
+        self.assertEqual(chinese_team_files, a_team_files)
+        self.assertEqual(set(chinese_team_files), set(CHINESE_TEAM_EXPECTED_MODELS))
+        for path in self.chinese_team_agent_paths():
+            with self.subTest(agent=path.name):
+                _, fields, body = self.read_agent_parts(path)
+                self.assertEqual(fields.get("model"), CHINESE_TEAM_EXPECTED_MODELS[path.name])
+                self.assertNotIn("variant", fields)
+                self.assertNotIn("reasoningEffort", fields)
+
+                if path.name == "agents-orchestrator.md":
+                    self.assertIn("## Chinese Model Operating Guidance", body)
+                    self.assertIn("Qwen coordinates", body)
+                    self.assertIn("DeepSeek owns code-heavy execution", body)
+                    self.assertIn("GLM owns planning", body)
+                    self.assertIn("Evidence gates", body)
 
     def test_deepseek_source_agents_use_deepseek_v4_pro_model_and_variant(self):
         for pack, path in self.deepseek_agent_paths():
@@ -661,6 +701,39 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertEqual(manifest["pack"], "a-team-deepseekv4-pro")
             self.assertEqual(manifest["mode"], "safe")
             self.assertEqual(manifest["files"]["agents-orchestrator.md"]["source"], "a-team-deepseekv4-pro/agents/agents-orchestrator.md")
+
+    def test_sync_safe_supports_chinese_team_with_lean_permissions_and_models(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "agents"
+            target.mkdir()
+
+            result = self.run_cli("sync", "--pack", "chinese-team", "--target", str(target), "--mode", "safe")
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+            orchestrator = (target / "agents-orchestrator.md").read_text(encoding="utf-8")
+            self.assertIn("model: opencode-go/qwen3.6-plus\n", orchestrator)
+            self.assertIn('    "Senior Project Manager": allow\n', orchestrator)
+            self.assertIn('    "Technical Writer": allow\n', orchestrator)
+            self.assertIn('    "*": deny\n', orchestrator)
+            self.assertNotIn('    "AI Engineer": allow\n', orchestrator)
+            self.assertNotIn('    "DevOps Automator": allow\n', orchestrator)
+
+            frontend = (target / "frontend-developer.md").read_text(encoding="utf-8")
+            self.assertIn("model: opencode-go/deepseek-v4-pro\n", frontend)
+            self.assertIn("  edit: allow\n", frontend)
+            self.assertIn("  bash: deny\n", frontend)
+            self.assertIn("  webfetch: deny\n", frontend)
+
+            api_tester = (target / "api-tester.md").read_text(encoding="utf-8")
+            self.assertIn("model: opencode-go/glm-5.1\n", api_tester)
+            self.assertIn("  edit: deny\n", api_tester)
+            self.assertIn("  bash: deny\n", api_tester)
+            self.assertIn("  webfetch: ask\n", api_tester)
+
+            manifest = json.loads((target / ".opencode-agents-state.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["pack"], "chinese-team")
+            self.assertEqual(manifest["mode"], "safe")
+            self.assertEqual(manifest["files"]["agents-orchestrator.md"]["source"], "chinese-team/agents/agents-orchestrator.md")
 
     def test_sync_safe_supports_a_team_plus_deepseekv4_pro_with_plus_permissions_and_model(self):
         with tempfile.TemporaryDirectory() as tmp:

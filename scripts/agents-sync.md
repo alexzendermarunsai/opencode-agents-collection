@@ -10,9 +10,9 @@ Use `scripts/agents_sync.py` to install a curated pack into a live OpenCode agen
 
 The script only installs from curated pack directories. It never installs from `reference-agents/`.
 
-Supported packs: `a-team`, `a-team-gpt-5.4`, `a-team-gpt-5.5`, `a-team-deepseekv4-pro`, `a-team-plus`, `a-team-plus-gpt-5.4`, `a-team-plus-gpt-5.5`, and `a-team-plus-deepseekv4-pro`.
+Supported packs: `a-team`, `a-team-gpt-5.4`, `a-team-gpt-5.5`, `a-team-deepseekv4-pro`, `chinese-team`, `a-team-plus`, `a-team-plus-gpt-5.4`, `a-team-plus-gpt-5.5`, and `a-team-plus-deepseekv4-pro`.
 
-As a quick rule: use `a-team` packs for the leaner workflow, `a-team-plus` packs for broader shipping coverage, and the model-specific variants when GPT-5.4, GPT-5.5, or DeepSeek v4 Pro is your primary model.
+As a quick rule: use `a-team` packs for the leaner workflow, `a-team-plus` packs for broader shipping coverage, model-specific variants when GPT-5.4, GPT-5.5, or DeepSeek v4 Pro is your primary model, and `chinese-team` when you want the lean `a-team` roster routed across Qwen, DeepSeek, and GLM through `opencode-go`.
 
 ## Commands
 
@@ -28,6 +28,12 @@ Use `safe` mode explicitly:
 
 ```bash
 python3 scripts/agents_sync.py sync --pack a-team-deepseekv4-pro --target ~/.config/opencode/agents --mode safe
+```
+
+Sync the heterogeneous Chinese-model pack:
+
+```bash
+python3 scripts/agents_sync.py sync --pack chinese-team --target ~/.config/opencode/agents
 ```
 
 Use `yolo` mode only when you intentionally want to remove approval prompts for `ask` permissions in the installed target files:
@@ -71,10 +77,11 @@ Pack:
   2) a-team-gpt-5.4
   3) a-team-gpt-5.5
   4) a-team-deepseekv4-pro
-  5) a-team-plus
-  6) a-team-plus-gpt-5.4
-  7) a-team-plus-gpt-5.5
-  8) a-team-plus-deepseekv4-pro
+  5) chinese-team
+  6) a-team-plus
+  7) a-team-plus-gpt-5.4
+  8) a-team-plus-gpt-5.5
+  9) a-team-plus-deepseekv4-pro
 Choose pack [4]:
 Mode:
   1) safe
