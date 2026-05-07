@@ -295,11 +295,21 @@ class AgentsSyncTests(unittest.TestCase):
                 self.assertNotIn("reasoningEffort", fields)
 
                 if path.name == "agents-orchestrator.md":
-                    self.assertIn("## Chinese Model Operating Guidance", body)
-                    self.assertIn("Qwen coordinates", body)
-                    self.assertIn("DeepSeek owns code-heavy execution", body)
-                    self.assertIn("GLM owns planning", body)
-                    self.assertIn("Evidence gates", body)
+                    self.assertIn("## Orchestration Operating Guidance", body)
+                    self.assertIn("workstream ledger", body)
+                    self.assertIn("Route by specialist responsibility", body)
+                    self.assertIn("Parallelize only when workstreams are genuinely independent", body)
+                    self.assertIn("Make every specialist handoff explicit", body)
+                    self.assertIn("Require evidence before advancing a workstream", body)
+                    self.assertIn("Handle conflicts by naming the disagreement", body)
+                    self.assertIn("Do not resolve conflicts by taking over specialist work yourself", body)
+                    self.assertIn(
+                        "Final synthesis must distinguish verified evidence, specialist claims that were not independently verified, unresolved risks, and recommended next checks",
+                        body,
+                    )
+                    self.assertNotIn("## Chinese Model Operating Guidance", body)
+                    for forbidden in ("Qwen", "DeepSeek", "GLM", "Chinese model", "model family"):
+                        self.assertNotIn(forbidden, body)
 
     def test_deepseek_source_agents_use_deepseek_v4_pro_model_and_variant(self):
         for pack, path in self.deepseek_agent_paths():
