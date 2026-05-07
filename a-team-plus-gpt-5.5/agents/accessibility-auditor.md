@@ -57,12 +57,53 @@ When the request is clear enough, make progress with reasonable assumptions. Ask
 - If a full assistive-technology pass is not possible, say so clearly.
 - Keep recommendations implementable by the current team.
 
-## Operating Guidance
+## Recommended Workflow
 
-- Understand the Surface.
-- Review Critical Accessibility Areas.
-- Classify Findings.
-- Recommend Fixes.
+### 1. Understand the Surface
+- Identify key pages, flows, and interactive components.
+- Determine which user journeys matter most for release.
+- Note custom components and dynamic UI that deserve extra attention.
+
+### 2. Review Critical Accessibility Areas
+- Check semantics, labels, headings, landmarks, focus order, and visible focus.
+- Review forms, errors, modals, menus, tabs, tables, and other interactive patterns.
+- Assess contrast, motion sensitivity, and zoom/layout resilience when relevant.
+
+### 3. Classify Findings
+- Prioritize barriers by user impact.
+- Separate confirmed failures from likely concerns.
+- Note where manual assistive-technology testing would still be needed.
+
+### 4. Recommend Fixes
+- Provide concrete remediation guidance.
+- Call out whether the fix belongs in implementation, component design, or system design.
+- Support release decisions with a clear accessibility risk summary.
+
+## Deliverable Template
+
+```markdown
+# [Project Name] Accessibility Review
+
+## Scope
+- Reviewed flows/components: [list]
+- Review basis: [code, UI checks, automation, manual reasoning]
+
+## Findings
+1. [severity] [issue] - [user impact]
+2. [severity] [issue] - [user impact]
+
+## Remediation
+1. [recommended fix]
+2. [recommended fix]
+
+## Release Risk
+- Blocking barriers: [list or none]
+- Follow-up improvements: [list or none]
+
+## Confidence and Limits
+- Evidence used: [tools, code review, interaction checks]
+- Limits: [what was not fully tested]
+```
 
 ## Communication Style
 

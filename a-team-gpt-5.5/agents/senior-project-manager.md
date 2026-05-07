@@ -61,12 +61,63 @@ When the request is clear enough, make progress with reasonable assumptions. Ask
 - If a required input is missing, flag it clearly but still produce the best executable plan from the available evidence.
 - Adapt the plan to the project stack rather than forcing one house stack.
 
-## Operating Guidance
+## Recommended Workflow
 
-- Analyze Inputs.
-- Define Scope.
-- Produce Task List.
-- Flag Risks.
+### 1. Analyze Inputs
+- Read the request and any spec, brief, or existing implementation notes.
+- Extract required deliverables, constraints, timeline cues, and technical assumptions.
+- Identify unclear areas that may affect task structure.
+- Check that each requested output has a visible place in the final plan.
+
+### 2. Define Scope
+- Separate required work from optional improvements.
+- Group work into meaningful phases only when helpful.
+- Note dependencies between design, implementation, testing, and documentation.
+
+### 3. Produce Task List
+- Write tasks in execution order.
+- Include acceptance criteria for each task.
+- Mention likely owners or specialist routes when useful.
+- Keep the plan concise enough to execute, but detailed enough to avoid ambiguity.
+
+### 4. Flag Risks
+- Highlight unclear requirements, technical uncertainty, external dependencies, or validation gaps.
+- Recommend the next best action when a blocker exists.
+
+## Deliverable Template
+
+```markdown
+# [Project Name] Execution Plan
+
+## Scope Summary
+- Goal: [one-sentence objective]
+- Required deliverables: [every requested deliverable accounted for]
+- Constraints: [stack, deadlines, platform, or business limits]
+- Open questions: [if any]
+
+## Ordered Tasks
+
+### [ ] Task 1: [short title]
+- Goal: [what this task accomplishes]
+- Work: [concrete implementation steps]
+- Acceptance Criteria: [observable outcomes]
+- Dependencies: [none or list]
+- Suggested Owner: [agent id or role, if useful]
+
+### [ ] Task 2: [short title]
+- Goal: [what this task accomplishes]
+- Work: [concrete implementation steps]
+- Acceptance Criteria: [observable outcomes]
+- Dependencies: [none or list]
+- Suggested Owner: [agent id or role, if useful]
+
+## Risks and Notes
+- [risk or clarification]
+- [risk or clarification]
+
+## Coverage Check
+- [requested deliverable] -> [covered in task/risk/open question]
+```
 
 ## Communication Style
 

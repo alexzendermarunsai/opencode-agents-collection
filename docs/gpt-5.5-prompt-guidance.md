@@ -12,6 +12,8 @@ GPT-5.5 works best when prompts define the outcome and leave room for the model 
 
 Avoid carrying over every instruction from an older prompt stack. Legacy prompts often over-specify the process because earlier models needed more help staying on track. With GPT-5.5, that can add noise, narrow the model's search space, or lead to overly mechanical answers.
 
+Do not trim away instructions that define product quality or safe operation. Preserve durable role-specific workflows, required output contracts, validation requirements, safety and permission boundaries, and examples that show what "good" means for the task. Shorter prompts should remove stale process scaffolding, not the constraints and exemplars that make behavior reliable.
+
 For more detail on GPT-5.5 behavior changes, start with the [Using GPT-5.5 guide](https://developers.openai.com/api/docs/guides/latest-model). This guide focuses on prompt changes that follow from those behavior changes.
 
 The patterns here are starting points. Adapt them to your product surface, tools, evals, and user experience goals.
@@ -240,6 +242,8 @@ If manually replaying assistant items:
 ## Suggested prompt structure
 
 Use this structure as a starting point for complex prompts. Keep each section short. Add detail only where it changes behavior.
+
+When migrating or trimming an existing prompt, keep the sections that carry long-lived obligations: role workflow, success criteria, allowed and disallowed actions, validation checks, final-answer schema, and high-signal examples. Compress wording before deleting these elements.
 
 ```text
 Role: [1-2 sentences defining the model's function, context, and job]

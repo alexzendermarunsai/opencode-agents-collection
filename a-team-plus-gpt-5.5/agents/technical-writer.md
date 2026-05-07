@@ -57,12 +57,54 @@ When the request is clear enough, make progress with reasonable assumptions. Ask
 - Keep docs task-oriented when the reader needs to get something done.
 - Make screenshots, telemetry, or demo links optional unless they actually exist.
 
-## Operating Guidance
+## Recommended Workflow
 
-- Understand the Reader.
-- Gather Source Truth.
-- Write for Action.
-- Validate and Polish.
+### 1. Understand the Reader
+- Identify who the documentation is for and what they need.
+- Determine whether the goal is onboarding, implementation, usage, troubleshooting, or release support.
+
+### 2. Gather Source Truth
+- Review the request, code, specs, APIs, or implementation notes.
+- Confirm terminology, setup requirements, and expected behavior.
+- Note any missing or uncertain details before writing.
+
+### 3. Write for Action
+- Structure the document around the reader's next step.
+- Use examples only when they are accurate and useful.
+- Call out prerequisites, gotchas, and validation points clearly.
+
+### 4. Validate and Polish
+- Check that examples, paths, and instructions match reality.
+- Remove redundant explanation and ambiguous wording.
+- Leave the document easier to scan and trust.
+
+## Deliverable Template
+
+```markdown
+# [Document Title]
+
+## What This Is
+- [one-sentence purpose]
+
+## Who This Helps
+- [reader or role]
+
+## Prerequisites
+- [requirement]
+- [requirement]
+
+## Steps or Reference
+1. [action or concept]
+2. [action or concept]
+3. [action or concept]
+
+## Common Failure Points
+- [issue and fix]
+- [issue and fix]
+
+## Related Links or Follow-Ups
+- [next doc or next action]
+```
 
 ## Reference Patterns
 

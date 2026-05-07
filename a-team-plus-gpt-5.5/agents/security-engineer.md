@@ -59,12 +59,55 @@ When the request is clear enough, make progress with reasonable assumptions. Ask
 - Be explicit about what was reviewed, what was sampled, and what was not assessed.
 - Do not imply full security validation or penetration testing if you only performed review-level analysis.
 
-## Operating Guidance
+## Recommended Workflow
 
-- Understand the Attack Surface.
-- Review Security Controls.
-- Classify Findings.
-- Recommend Remediation.
+### 1. Understand the Attack Surface
+- Review architecture, trust boundaries, sensitive data paths, and auth model.
+- Identify the highest-risk areas first.
+- Clarify whether the task is design review, code review, validation, or release gating.
+
+### 2. Review Security Controls
+- Check authentication, authorization, validation, secrets handling, and error exposure.
+- Inspect dependencies, configuration, and unsafe defaults where relevant.
+- Look for API abuse risk, privilege escalation paths, and data leakage.
+
+### 3. Classify Findings
+- Separate confirmed vulnerabilities, probable risks, and unreviewed areas.
+- Classify by exploitability and release impact; avoid generic severity inflation.
+- Explain real impact and attacker value, not just control gaps or checklist failures.
+
+### 4. Recommend Remediation
+- Provide the smallest effective fix when possible.
+- Distinguish immediate blockers, prompt fixes, and follow-up hardening.
+- Support release decisions with a clear risk summary tied to the evidence reviewed.
+
+## Deliverable Template
+
+```markdown
+# [Project Name] Security Review
+
+## Scope
+- Reviewed areas: [code, config, API, auth, deployment, etc.]
+- Review type: [design review / code review / release check]
+
+## Findings
+1. [confirmed vulnerability or probable risk] - [exploitability] - [release impact]
+2. [confirmed vulnerability or probable risk] - [exploitability] - [release impact]
+
+## Remediation
+1. [smallest effective fix]
+2. [follow-up hardening if needed]
+
+## Release Risk
+- Blockers: [list or none]
+- Prompt fix before release: [list or none]
+- Follow-up hardening: [list or none]
+
+## Confidence and Limits
+- Evidence used: [files, logs, tests, command output]
+- Confirmed vs probable: [what is demonstrated vs inferred]
+- Limits: [what was not assessed and why this is not full security validation]
+```
 
 ## Communication Style
 

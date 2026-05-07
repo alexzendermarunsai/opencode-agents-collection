@@ -108,9 +108,12 @@ GPT_5_5_EXPECTED_PERMISSIONS = {
 GPT_5_5_REQUIRED_PROMPT_SECTION_GROUPS = (
     ("Stop Rules",),
     ("Core Responsibilities", "Core Rules"),
-    ("Operating Guidance", "Operating Rules", "Default Operating Posture"),
+    ("Operating Guidance", "Operating Rules", "Default Operating Posture", "Recommended Workflow", "Validation Workflow"),
     ("Success Criteria", "Completion Check"),
 )
+
+GPT_5_5_WORKFLOW_CONTRACT_HEADINGS = ("Recommended Workflow", "Validation Workflow")
+GPT_5_5_OUTPUT_CONTRACT_HEADINGS = ("Preferred Completion Format", "Deliverable Template", "Report Template")
 
 PLUS_ONLY_SPECIALISTS = (
     "Rapid Prototyper",
@@ -271,6 +274,82 @@ class AgentsSyncTests(unittest.TestCase):
                         headings.intersection(alternatives),
                         f"{path.name} missing one of: {', '.join(alternatives)}",
                     )
+
+    def test_gpt_5_5_non_orchestrator_agents_keep_workflow_and_output_contracts(self):
+        for pack, path in self.gpt_5_5_agent_paths():
+            if path.name == "agents-orchestrator.md":
+                continue
+            with self.subTest(pack=pack, agent=path.name):
+                _, _, body = self.read_agent_parts(path)
+                headings = self.markdown_headings(body)
+                workflow_heading = next(
+                    (heading for heading in GPT_5_5_WORKFLOW_CONTRACT_HEADINGS if heading in headings),
+                    None,
+                )
+                output_heading = next(
+                    (heading for heading in GPT_5_5_OUTPUT_CONTRACT_HEADINGS if heading in headings),
+                    None,
+                )
+
+                self.assertIsNotNone(workflow_heading, f"{path.name} missing workflow contract")
+                self.assertIsNotNone(output_heading, f"{path.name} missing output contract")
+                self.assertIn("Success Criteria", headings)
+                self.assertRegex(self.markdown_section(body, workflow_heading), r"^### 1\.", path.name)
+                self.assertIn("# ", self.markdown_section(body, output_heading), path.name)
+
+    def test_gpt_5_5_orchestrators_keep_delegation_output_and_completion_contracts(self):
+        required_contract_headings = ("Delegation Contract", "Final Output Contract", "Completion Check")
+
+        for pack in GPT_5_5_PACKS:
+            with self.subTest(pack=pack):
+                agents_dir = REPO_ROOT / pack / "agents"
+                orchestrator_path = agents_dir / "agents-orchestrator.md"
+                content, _, body = self.read_agent_parts(orchestrator_path)
+                headings = self.markdown_headings(body)
+
+                for heading in required_contract_headings:
+                    self.assertIn(heading, headings)
+
+                allowlist = self.parse_task_allowlist(content)
+                declared_names = []
+                for agent_path in sorted(agents_dir.glob("*.md")):
+                    if agent_path.name == "agents-orchestrator.md":
+                        continue
+                    _, fields, _ = self.read_agent_parts(agent_path)
+                    declared_names.append(fields["name"])
+                self.assertEqual(set(allowlist), set(declared_names))
+
+                delegation_contract = self.markdown_section(body, "Delegation Contract").lower()
+                final_output_contract = self.markdown_section(body, "Final Output Contract").lower()
+                completion_check = self.markdown_section(body, "Completion Check").lower()
+
+                for phrase in (
+                    "exact scope",
+                    "required evidence for completion",
+                    "dependencies or blockers",
+                    "requested output format",
+                    "prior result",
+                    "unresolved risks",
+                    "decision point",
+                ):
+                    self.assertIn(phrase, delegation_contract)
+
+                for phrase in (
+                    "what was completed",
+                    "responsible specialist work",
+                    "evidence used for confidence",
+                    "blockers, risks, or limitations",
+                    "self-contained",
+                ):
+                    self.assertIn(phrase, final_output_contract)
+
+                for phrase in (
+                    "valid registered agent names",
+                    "blocking dependencies",
+                    "required validation",
+                    "backed by evidence",
+                ):
+                    self.assertIn(phrase, completion_check)
 
     def test_gpt_5_5_source_agents_do_not_include_deepseek_model_remnants(self):
         forbidden_literals = ("opencode-go/deepseek-v4-pro", "deepseek-v4-pro")
