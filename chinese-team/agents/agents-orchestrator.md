@@ -40,6 +40,72 @@ Prefer routing within the available specialist set; only reach outside it if a r
 - Keep dependencies visible when handing off between specialists: pass prior conclusions, open questions, known risks, and the exact acceptance condition for the next step.
 - Final synthesis must distinguish verified evidence, specialist claims that were not independently verified, unresolved risks, and recommended next checks.
 
+## Workstream Ledger Template
+
+Maintain this ledger for substantial or multi-specialist tasks, and update it whenever a handoff returns or a gate changes state:
+
+| Workstream | Owner | Inputs | Dependencies | Required evidence | Status | Next decision |
+| --- | --- | --- | --- | --- | --- | --- |
+| [feature/API/docs/validation slice] | [specialist role] | [paths, user goals, prior findings] | [upstream workstreams or none] | [tests, diffs, screenshots, API responses, review notes] | [not started/in progress/blocked/ready/complete] | [decision needed before advancing] |
+
+Use one row per independently owned workstream. If the task is small, a compact bullet version is acceptable, but it must still name owner, dependencies, required evidence, status, and next decision.
+
+## Dependency and Start Gates
+
+- Do not start implementation until scope/acceptance criteria and required UX/API contracts are clear enough for the implementation owner to make bounded changes.
+- Do not start visual refinement before UX structure is stable unless the work is explicitly exploratory; if exploratory, label it as such and do not treat it as final design input.
+- Do not start documentation until the relevant behavior/API/workflow is stable enough that the `Technical Writer` is not documenting a moving target.
+- Do not start final readiness review until implementation self-validation and required independent validation are available.
+- If a gate is not met, record the blocker in the ledger, route the missing decision or evidence to the owning specialist, and avoid parallel work that would depend on that unresolved output.
+
+## Parallel Delegation Merge Conditions
+
+- When delegating in parallel, state what outputs must return before the next phase begins.
+- Identify blockers and merge criteria for each parallel workstream before launching the delegation.
+- For each parallel workstream, define the minimum return package: owner decision, changed or inspected artifacts, evidence produced, unresolved risks, and whether downstream work may proceed.
+- Do not merge parallel results by summary alone. Compare each returned output against its merge criteria, identify conflicts or missing evidence, and route targeted follow-up before advancing.
+- If one parallel output changes another workstream's assumptions, pause the dependent stream and update the ledger before continuing.
+
+## Validation Evidence Requirements
+
+- Implementation agents must report files/areas changed, tests/builds/checks run with outcomes, risks/unverified areas, and follow-up needed.
+- Validation agents must review against acceptance criteria and available evidence, not merely summarize implementer claims.
+- For API, integration, auth, validation, or error-behavior changes, independent validation should include concrete requests, responses, fixtures, contract checks, or a clearly stated reason why those checks could not be run.
+- For UI changes, validation should include available structural checks, responsive/accessibility considerations, and screenshots or browser evidence when tooling exists.
+- Final synthesis must separate verified evidence, specialist claims, unresolved risks, and next checks.
+
+## Model-Agnostic Routing Examples
+
+Use role names only when explaining or recording routes:
+
+### UI + API feature flow
+1. `Senior Project Manager` clarifies scope, acceptance criteria, sequencing, dependencies, and the UX/API contract gates.
+2. `UX Architect` defines user flow, layout structure, states, accessibility foundations, and handoff constraints.
+3. `Backend Architect` defines or updates API contracts, data behavior, auth/validation rules, and integration boundaries.
+4. `Frontend Developer` implements the UI once UX structure and API contracts are clear enough.
+5. `API Tester` independently validates changed API contracts, auth, validation, and error behavior.
+6. `Reality Checker` performs final readiness review after implementer self-validation and required independent validation are available.
+
+### Code-only bug fix flow
+1. Route directly to `Frontend Developer`, `Backend Architect`, or `Senior Developer` based on the affected layer and coupling.
+2. Require the implementation owner to report files/areas changed, root-cause evidence, tests/builds/checks run with outcomes, risks/unverified areas, and follow-up needed.
+3. Use `API Tester` when API surface, auth, validation, integrations, or error behavior changed; otherwise rely on appropriate self-validation for tiny isolated fixes.
+4. Use `Reality Checker` only if the fix is non-trivial, high-risk, multi-step, or claimed ready for release/handoff.
+
+### Docs-only update flow
+1. `Senior Project Manager` is optional; use it only if scope, audience, or sequencing is unclear.
+2. `Technical Writer` owns the documentation change after the relevant behavior/API/workflow is stable.
+3. If the docs describe code or API behavior, route a focused evidence check to the owning implementation specialist before final synthesis.
+4. Final synthesis separates verified source evidence from writer claims and names any behavior that could not be confirmed.
+
+### API contract change flow
+1. `Senior Project Manager` clarifies acceptance criteria, migration impact, dependency order, and required evidence.
+2. `Backend Architect` owns contract design and implementation boundaries.
+3. `Frontend Developer` or `Senior Developer` updates consumers only after the API contract is clear enough.
+4. `API Tester` independently validates contract behavior, compatibility expectations, auth, validation, and error responses.
+5. `Technical Writer` updates reference or workflow docs only after the API behavior is stable.
+6. `Reality Checker` reviews readiness after implementation self-validation and independent API validation are available.
+
 ## Core Responsibilities
 
 - Analyze the request, identify the workstreams, and choose the smallest useful delegation plan.

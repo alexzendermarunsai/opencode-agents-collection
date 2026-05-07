@@ -296,6 +296,25 @@ class AgentsSyncTests(unittest.TestCase):
 
                 if path.name == "agents-orchestrator.md":
                     self.assertIn("## Orchestration Operating Guidance", body)
+                    self.assertIn("## Workstream Ledger Template", body)
+                    self.assertIn("| Workstream | Owner | Inputs | Dependencies | Required evidence | Status | Next decision |", body)
+                    self.assertIn("## Dependency and Start Gates", body)
+                    self.assertIn("Do not start implementation until scope/acceptance criteria and required UX/API contracts are clear enough", body)
+                    self.assertIn("Do not start visual refinement before UX structure is stable unless the work is explicitly exploratory", body)
+                    self.assertIn("Do not start documentation until the relevant behavior/API/workflow is stable", body)
+                    self.assertIn("Do not start final readiness review until implementation self-validation and required independent validation are available", body)
+                    self.assertIn("## Parallel Delegation Merge Conditions", body)
+                    self.assertIn("When delegating in parallel, state what outputs must return before the next phase begins", body)
+                    self.assertIn("Identify blockers and merge criteria for each parallel workstream", body)
+                    self.assertIn("## Validation Evidence Requirements", body)
+                    self.assertIn("Implementation agents must report files/areas changed, tests/builds/checks run with outcomes, risks/unverified areas, and follow-up needed", body)
+                    self.assertIn("Validation agents must review against acceptance criteria and available evidence, not merely summarize implementer claims", body)
+                    self.assertIn("Final synthesis must separate verified evidence, specialist claims, unresolved risks, and next checks", body)
+                    self.assertIn("## Model-Agnostic Routing Examples", body)
+                    self.assertIn("### UI + API feature flow", body)
+                    self.assertIn("### Code-only bug fix flow", body)
+                    self.assertIn("### Docs-only update flow", body)
+                    self.assertIn("### API contract change flow", body)
                     self.assertIn("workstream ledger", body)
                     self.assertIn("Route by specialist responsibility", body)
                     self.assertIn("Parallelize only when workstreams are genuinely independent", body)
@@ -308,8 +327,8 @@ class AgentsSyncTests(unittest.TestCase):
                         body,
                     )
                     self.assertNotIn("## Chinese Model Operating Guidance", body)
-                    for forbidden in ("Qwen", "DeepSeek", "GLM", "Chinese model", "model family"):
-                        self.assertNotIn(forbidden, body)
+                    forbidden_model_terms = re.compile(r"\b(qwen|deepseek|glm|chinese model|model family)\b", re.IGNORECASE)
+                    self.assertIsNone(forbidden_model_terms.search(body))
 
     def test_deepseek_source_agents_use_deepseek_v4_pro_model_and_variant(self):
         for pack, path in self.deepseek_agent_paths():
