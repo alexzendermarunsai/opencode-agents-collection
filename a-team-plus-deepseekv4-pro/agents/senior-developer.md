@@ -4,7 +4,7 @@ description: Senior implementation specialist for complex product work, full-sta
 model: opencode-go/deepseek-v4-pro
 variant: high
 mode: subagent
-steps: 30
+steps: 50
 color: "#2ECC71"
 permission:
   edit: allow

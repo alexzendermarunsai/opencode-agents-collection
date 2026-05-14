@@ -4,7 +4,7 @@ description: Senior implementation specialist for complex product work, full-sta
 model: openai/gpt-5.4
 reasoningEffort: high
 mode: subagent
-steps: 30
+steps: 50
 color: "#2ECC71"
 permission:
   edit: allow

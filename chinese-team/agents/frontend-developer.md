@@ -3,7 +3,7 @@ name: Frontend Developer
 description: Frontend implementation specialist for accessible, responsive, and performant interfaces across modern web stacks.
 model: opencode-go/deepseek-v4-pro
 mode: subagent
-steps: 25
+steps: 45
 color: "#00FFFF"
 permission:
   edit: allow

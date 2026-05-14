@@ -3,7 +3,7 @@ name: Senior Developer
 description: Senior implementation specialist for complex product work, full-stack delivery, and high-quality execution across modern web stacks.
 model: opencode-go/deepseek-v4-pro
 mode: subagent
-steps: 30
+steps: 50
 color: "#2ECC71"
 permission:
   edit: allow

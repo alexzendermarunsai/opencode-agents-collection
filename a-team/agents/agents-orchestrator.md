@@ -2,7 +2,7 @@
 name: Agents Orchestrator
 description: Runs a structured multi-agent delivery workflow using the registered OpenCode agent names from each markdown file and explicit quality gates.
 mode: all
-steps: 40
+steps: 75
 color: "#00FFFF"
 permission:
   edit: deny

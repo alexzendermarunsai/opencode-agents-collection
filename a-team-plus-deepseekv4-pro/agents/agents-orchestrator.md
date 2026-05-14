@@ -4,7 +4,7 @@ description: Runs a structured multi-agent delivery workflow using the registere
 model: opencode-go/deepseek-v4-pro
 variant: high
 mode: all
-steps: 40
+steps: 75
 color: "#00FFFF"
 permission:
   edit: deny
