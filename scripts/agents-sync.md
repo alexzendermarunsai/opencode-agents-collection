@@ -10,9 +10,9 @@ Use `scripts/agents_sync.py` to install a curated pack into a live OpenCode agen
 
 The script only installs from curated pack directories. It never installs from `reference-agents/`.
 
-Supported packs: `a-team`, `a-team-gpt-5.4`, `a-team-gpt-5.5`, `a-team-deepseekv4-pro`, `chinese-team`, `a-team-plus`, `a-team-plus-gpt-5.4`, `a-team-plus-gpt-5.5`, and `a-team-plus-deepseekv4-pro`.
+Supported packs: `a-team`, `a-team-gpt-5.4`, `a-team-gpt-5.5`, `a-team-deepseekv4-pro`, `chinese-team`, `american-chinese-team`, `a-team-plus`, `a-team-plus-gpt-5.4`, `a-team-plus-gpt-5.5`, and `a-team-plus-deepseekv4-pro`.
 
-As a quick rule: use `a-team` packs for the leaner workflow, `a-team-plus` packs for broader shipping coverage, model-specific variants when GPT-5.4, GPT-5.5, or DeepSeek v4 Pro is your primary model, and `chinese-team` when you want the lean `a-team` roster routed across Qwen, DeepSeek, and GLM through `opencode-go`.
+As a quick rule: use `a-team` packs for the leaner workflow, `a-team-plus` packs for broader shipping coverage, model-specific variants when GPT-5.4, GPT-5.5, or DeepSeek v4 Pro is your primary model, `chinese-team` when you want the lean `a-team` roster routed across Qwen, DeepSeek, and GLM through `opencode-go`, and `american-chinese-team` when you want GPT-5.5 orchestration over Chinese-model specialists.
 
 ## Commands
 
@@ -34,6 +34,12 @@ Sync the heterogeneous Chinese-model pack:
 
 ```bash
 python3 scripts/agents_sync.py sync --pack chinese-team --target ~/.config/opencode/agents
+```
+
+Sync the GPT-5.5-orchestrated Chinese specialist pack:
+
+```bash
+python3 scripts/agents_sync.py sync --pack american-chinese-team --target ~/.config/opencode/agents
 ```
 
 Use `yolo` mode only when you intentionally want to remove approval prompts for `ask` permissions in the installed target files:
@@ -78,10 +84,11 @@ Pack:
   3) a-team-gpt-5.5
   4) a-team-deepseekv4-pro
   5) chinese-team
-  6) a-team-plus
-  7) a-team-plus-gpt-5.4
-  8) a-team-plus-gpt-5.5
-  9) a-team-plus-deepseekv4-pro
+  6) american-chinese-team
+  7) a-team-plus
+  8) a-team-plus-gpt-5.4
+  9) a-team-plus-gpt-5.5
+  10) a-team-plus-deepseekv4-pro
 Choose pack [4]:
 Mode:
   1) safe

@@ -20,11 +20,12 @@ SUPPORTED_PACKS = (
     "a-team-gpt-5.4",
     "a-team-gpt-5.5",
     "a-team-deepseekv4-pro",
+    "chinese-team",
+    "american-chinese-team",
     "a-team-plus",
     "a-team-plus-gpt-5.4",
     "a-team-plus-gpt-5.5",
     "a-team-plus-deepseekv4-pro",
-    "chinese-team",
 )
 SUPPORTED_MODES = ("safe", "trusted", "yolo")
 
@@ -231,7 +232,14 @@ def safe_permission_matrix(pack: str, agent_names: list[str]) -> dict[str, dict[
         "Senior Developer": {"edit": "allow", "bash": "deny", "webfetch": "deny"},
         "Technical Writer": {"edit": "allow", "bash": "deny", "webfetch": "ask"},
     }
-    if pack in {"a-team", "a-team-gpt-5.4", "a-team-gpt-5.5", "a-team-deepseekv4-pro", "chinese-team"}:
+    if pack in {
+        "a-team",
+        "a-team-gpt-5.4",
+        "a-team-gpt-5.5",
+        "a-team-deepseekv4-pro",
+        "chinese-team",
+        "american-chinese-team",
+    }:
         return common
     if pack in {"a-team-plus", "a-team-plus-gpt-5.4", "a-team-plus-gpt-5.5", "a-team-plus-deepseekv4-pro"}:
         common.update(
