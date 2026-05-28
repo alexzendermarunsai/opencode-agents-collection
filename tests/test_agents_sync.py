@@ -32,7 +32,7 @@ DEEPSEEK_PACKS = ("a-team-deepseekv4-pro", "a-team-plus-deepseekv4-pro")
 GPT_5_5_PACKS = ("a-team-gpt-5.5", "a-team-plus-gpt-5.5")
 
 CHINESE_TEAM_EXPECTED_MODELS = {
-    "agents-orchestrator.md": "opencode-go/qwen3.6-plus",
+    "agents-orchestrator.md": "opencode-go/qwen3.7-max",
     "senior-developer.md": "opencode-go/deepseek-v4-pro",
     "frontend-developer.md": "opencode-go/deepseek-v4-pro",
     "backend-architect.md": "opencode-go/deepseek-v4-pro",
@@ -388,23 +388,18 @@ class AgentsSyncTests(unittest.TestCase):
                     self.assertIn("## Orchestration Operating Guidance", body)
                     self.assertIn("## Workstream Ledger Template", body)
                     self.assertIn("| Workstream | Owner | Inputs | Dependencies | Required evidence | Status | Next decision |", body)
-                    self.assertIn("## Dependency and Start Gates", body)
-                    self.assertIn("Do not start implementation until scope/acceptance criteria and required UX/API contracts are clear enough", body)
-                    self.assertIn("Do not start visual refinement before UX structure is stable unless the work is explicitly exploratory", body)
-                    self.assertIn("Do not start documentation until the relevant behavior/API/workflow is stable", body)
-                    self.assertIn("Do not start final readiness review until implementation self-validation and required independent validation are available", body)
-                    self.assertIn("## Parallel Delegation Merge Conditions", body)
+                    self.assertIn("## Dependency And Parallel Gates", body)
+                    self.assertIn("Do not start dependent work until required upstream decisions, scope, contracts, or evidence are clear enough", body)
                     self.assertIn("When delegating in parallel, state what outputs must return before the next phase begins", body)
                     self.assertIn("Identify blockers and merge criteria for each parallel workstream", body)
                     self.assertIn("## Validation Evidence Requirements", body)
                     self.assertIn("Implementation agents must report files/areas changed, tests/builds/checks run with outcomes, risks/unverified areas, and follow-up needed", body)
                     self.assertIn("Validation agents must review against acceptance criteria and available evidence, not merely summarize implementer claims", body)
                     self.assertIn("Final synthesis must separate verified evidence, specialist claims, unresolved risks, and next checks", body)
-                    self.assertIn("## Model-Agnostic Routing Examples", body)
-                    self.assertIn("### UI + API feature flow", body)
-                    self.assertIn("### Code-only bug fix flow", body)
-                    self.assertIn("### Docs-only update flow", body)
-                    self.assertIn("### API contract change flow", body)
+                    self.assertIn("## Routing Guide", body)
+                    self.assertIn("## Delegation Contract", body)
+                    self.assertIn("## Final Output Contract", body)
+                    self.assertIn("## Completion Check", body)
                     self.assertIn("workstream ledger", body)
                     self.assertIn("Route by specialist responsibility", body)
                     self.assertIn("Parallelize only when workstreams are genuinely independent", body)
@@ -444,7 +439,7 @@ class AgentsSyncTests(unittest.TestCase):
                     ):
                         self.assertIn(heading, headings)
                     self.assertIn("model: openai/gpt-5.5\n", content)
-                    self.assertNotIn("opencode-go/qwen3.6-plus", content)
+                    self.assertNotIn("opencode-go/qwen3.7-max", content)
                 else:
                     self.assertNotIn("reasoningEffort", fields)
 
@@ -858,7 +853,7 @@ class AgentsSyncTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
 
             orchestrator = (target / "agents-orchestrator.md").read_text(encoding="utf-8")
-            self.assertIn("model: opencode-go/qwen3.6-plus\n", orchestrator)
+            self.assertIn("model: opencode-go/qwen3.7-max\n", orchestrator)
             self.assertIn('    "Senior Project Manager": allow\n', orchestrator)
             self.assertIn('    "Technical Writer": allow\n', orchestrator)
             self.assertIn('    "*": deny\n', orchestrator)

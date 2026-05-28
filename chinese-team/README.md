@@ -20,7 +20,7 @@ Choose this pack when the lean `a-team` workflow fits and you want Chinese-model
 
 | Work lane | Agents | Model |
 | --- | --- | --- |
-| Orchestration | `Agents Orchestrator` | `opencode-go/qwen3.6-plus` |
+| Orchestration | `Agents Orchestrator` | `opencode-go/qwen3.7-max` |
 | Coding and architecture | `Senior Developer`, `Frontend Developer`, `Backend Architect` | `opencode-go/deepseek-v4-pro` |
 | Planning, research, design, validation, and docs | `Senior Project Manager`, `UX Researcher`, `UX Architect`, `UI Designer`, `API Tester`, `Reality Checker`, `Technical Writer` | `opencode-go/glm-5.1` |
 
@@ -157,4 +157,4 @@ Use a GLM-routed specialist directly for planning or documentation:
 - The folder name is just a template label; the agent prompts are written to be reusable outside this directory.
 - In this setup, orchestrator delegation and `permission.task` should use the declared markdown `name:` values, not the filename stems.
 - If you use this as a live OpenCode agents directory, confirm your setup supports loading agents from the `agents/` subdirectory.
-- This pack assumes the `opencode-go` provider exposes `qwen3.6-plus`, `deepseek-v4-pro`, and `glm-5.1` under the model IDs shown above.
+- This pack assumes the `opencode-go` provider exposes `qwen3.7-max`, `deepseek-v4-pro`, and `glm-5.1` under the model IDs shown above.
